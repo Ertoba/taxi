@@ -1,0 +1,57 @@
+<ons-page id="promotions">
+    <ons-toolbar>
+      <div class="left"><ons-back-button>Back</ons-back-button></div>
+      <div class="center" data-i18npromotions="Promo Discount">Promo Discount</div>
+    </ons-toolbar>
+    <div class="screen-wrap-white" style="display: flex;flex-direction: column;">
+
+      <div style="width:90%;margin-left:auto;margin-right:auto;overflow-y: scroll;height:100%;">
+
+        <p style='font-size: 14px;margin: 0 0;font-weight: bold;    padding: 30px 0px 10px 0px;margin-left: auto;margin-right: auto;' data-i18npromotions="Enter a promo code">Enter a promo code</p>
+        <p style='margin:0 0 15px 0;' data-i18npromotions="Promo discount will be applied on your next ride">Promo discount will be applied on your next ride</p>
+
+        
+        <ons-input id="promocodeval" style="width: 100%;margin-bottom:20px;display: block;" modifier="underbar" float></ons-input>
+
+        <p id="promocodevalidationmsg" style="font-size:12px;color:red" ></p>
+
+
+        <div id="promo-content" style="display:none;margin-top:30px;">
+          <p style='color: black;font-size: 14px;margin: 50px 0 20px 0;font-weight: bold; padding: 10px 0px 10px 0px;margin-left: auto;margin-right: auto;' data-i18npromotions="Your Discount">Your Discount</p>
+          <div style="padding:15px;margin-top: 10px;margin-bottom:10px;background-color:rgb(85, 37, 204); border-radius: 10px;position: relative;">
+              <ons-icon icon="fa-info-circle" size="16px" style="color: rgb(255, 255, 255);position: absolute;top: 15px;right: 10px;font-size: 16px;"></ons-icon>
+              <p id="promo-title" style="color: #fff;font-weight: bold;font-size: 16px;margin: 0 0 15px 0;width: calc(100% - 20px);"></p>
+              <p id="promo-desc" style="color: #fff;font-size: 14px;margin: 0 0 40px 0;"></p>
+
+
+              
+              <div style="display:flex;width:100%;flex-wrap:nowrap;align-items:center;justify-content:space-between;padding-top: 15px;border-top: thin solid #ffffff61">
+                <span style="font-size:12px;color: #ffffff;" id="promo-status"></span> 
+                <span style="font-size:12px;color: #ffffff;" id="promo-usage"></span>               
+                <span style="font-size:12px;color: #ffffff;" id="promo-city"></span>
+              </div>
+
+          </div> 
+        </div>
+        
+
+      </div>
+
+      <div style="width: 100%;flex-shrink: 0;text-align: center;padding-bottom: 15px;padding-top:10px;background-color: #fff;" >        
+
+        <div id="riderrefbtn" style="display:flex;flex-wrap:nowrap;align-items:center;padding: 10px;background-color: rgb(255 220 168);width: 90%;margin: 10px auto;box-sizing: border-box;border-radius: 10px;" onclick="showReferralInfo();">
+          <div style="display:inline-block;width: 40px;height: 40px;border-radius: 50%;background-color: #ff9800;margin-right:10px;position: relative;">
+            <ons-icon icon="fa-tag" size="18px" style="color: rgb(255, 255, 255);position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);font-size: 18px;"></ons-icon>
+          </div>
+          <div>
+            <p style="margin:0;" data-i18npromotions="Get free trips">Get free trips</p>
+          </div>
+        </div>
+
+        <ons-button  onclick="promocheckadd($('#promocodeval').val())" style="width:90%;margin-left: auto;margin-right: auto;" data-i18npromotions="Apply" modifier="large" >Apply</ons-button>       
+         
+      </div>
+
+    </div>  
+  </ons-page>
+  

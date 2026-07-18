@@ -1,0 +1,12 @@
+{
+  "android": {
+    "release": {
+      "keystore": "C:/secure-path/rider-upload.jks",
+      "storePassword": "REPLACE_OUTSIDE_GIT",
+      "alias": "rider-upload",
+      "password": "REPLACE_OUTSIDE_GIT",
+      "keystoreType": "jks",
+      "packageType": "bundle"
+    }
+  }
+}

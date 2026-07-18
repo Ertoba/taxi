@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.projectgics.drop" version="2.3.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>DropTaxi</name>
+    <description>
+        A versatile White-label online taxi booking App.
+    </description>
+    <author email="support@projectgics.com.ng" href="http://projectgics.com.ng">
+        ProjectGICS
+    </author>
+    <content src="index.html" />
+    
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <platform name="android">
+        <allow-intent href="market:*" />
+        <preference name="LoadUrlTimeoutValue" value="700000" />
+        <splash density="port-hdpi" src="res/screen/android/splash-port-hdpi.png" />
+        <splash density="port-ldpi" src="res/screen/android/splash-port-ldpi.png" />
+        <splash density="port-mdpi" src="res/screen/android/splash-port-mdpi.png" />
+        <splash density="port-xhdpi" src="res/screen/android/splash-port-xhdpi.png" />
+
+        <icon src="res/icon/android/icon-36-ldpi.png" density="ldpi" />
+        <icon src="res/icon/android/icon-48-mdpi.png" density="mdpi" />
+        <icon src="res/icon/android/icon-72-hdpi.png" density="hdpi" />
+        <icon src="res/icon/android/icon-96-xhdpi.png" density="xhdpi" />
+
+        <resource-file src="res/styles.xml" target="app/src/main/res/values/styles.xml" />
+
+        <resource-file src="res/icon/android-notification/icon-mdpi.png" target="app/src/main/res/drawable-mdpi/notification_icon.png" />
+        <resource-file src="res/icon/android-notification/icon-hdpi.png" target="app/src/main/res/drawable-hdpi/notification_icon.png" />
+        <resource-file src="res/icon/android-notification/icon-xhdpi.png" target="app/src/main/res/drawable-xhdpi/notification_icon.png" />
+        <resource-file src="res/icon/android-notification/icon-xxhdpi.png" target="app/src/main/res/drawable-xxhdpi/notification_icon.png" />
+        <resource-file src="res/icon/android-notification/icon-xxxhdpi.png" target="app/src/main/res/drawable-xxxhdpi/notification_icon.png" />
+
+        <config-file parent="/manifest/application" target="app/src/main/AndroidManifest.xml">
+            <meta-data
+                android:name="com.google.firebase.messaging.default_notification_icon"
+                android:resource="@drawable/notification_icon"/>
+        </config-file>
+        
+    </platform>
+    <platform name="ios">
+        <allow-intent href="itms:*" />
+        <allow-intent href="itms-apps:*" />
+        <splash src="res/screen/ios/Default@2x~universal~anyany.png" />
+         <preference name="StatusBarOverlaysWebView" value="true" />
+        
+         
+        <config-file target="*-Info.plist" parent="NSCameraUsageDescription">
+            <string>Camera access is required in capturing images to use for your profile photo</string>
+        </config-file>
+
+        <config-file target="*-Info.plist" parent="NSPhotoLibraryUsageDescription">
+            <string>Photo library access is required to enable you choose the best picture to use for your profile photo</string>
+        </config-file>  
+
+        <edit-config file="*-Info.plist" mode="overwrite" target="NSLocationWhenInUseUsageDescription">
+            <string>Enabling location services allows for more accurate, faster and reliable pickups when requesting for rides. </string>
+        </edit-config> 
+
+
+        <edit-config file="*-Info.plist" mode="overwrite" target="NSLocationAlwaysUsageDescription">
+            <string>To get drivers close to your location and match you with the closest driver, the app always needs access to your location information.</string>
+        </edit-config> 
+
+
+        <edit-config file="*-Info.plist" mode="overwrite" target="NSLocationAlwaysAndWhenInUseUsageDescription">
+            <string>In order to get drivers close to your location and match you with the closest driver for easy pickups, the app always need access to your location information.</string>
+        </edit-config> 
+
+        <privacy-manifest>
+            <key>NSPrivacyTracking</key>
+            <false/>
+            <key>NSPrivacyAccessedAPITypes</key>
+            <array>
+                <dict>
+                    <key>NSPrivacyAccessedAPIType</key>
+                    <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+                    <key>NSPrivacyAccessedAPITypeReasons</key>
+                    <array>
+                        <string>3B52.1</string>
+                    </array>
+                </dict>
+                <dict>
+                    <key>NSPrivacyAccessedAPIType</key>
+                    <string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+                    <key>NSPrivacyAccessedAPITypeReasons</key>
+                    <array>
+                        <string>35F9.1</string>
+                    </array>
+                </dict>
+                <dict>
+                    <key>NSPrivacyAccessedAPIType</key>
+                    <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+                    <key>NSPrivacyAccessedAPITypeReasons</key>
+                    <array>
+                        <string>CA92.1</string>
+                    </array>
+                </dict>
+                <dict>
+                    <key>NSPrivacyAccessedAPIType</key>
+                    <string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+                    <key>NSPrivacyAccessedAPITypeReasons</key>
+                    <array>
+                        <string>E174.1</string>
+                    </array>
+                </dict>
+            </array>
+            <key>NSPrivacyCollectedDataTypes</key>
+            <array>
+                <dict>
+                    <key>NSPrivacyCollectedDataType</key>
+                    <string>NSPrivacyCollectedDataTypeCoarseLocation</string>
+                    <key>NSPrivacyCollectedDataTypeLinked</key>
+                    <false/>
+                    <key>NSPrivacyCollectedDataTypeTracking</key>
+                    <false/>
+                    <key>NSPrivacyCollectedDataTypePurposes</key>
+                    <array>
+                        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+                    </array>
+                </dict>
+                <dict>
+                    <key>NSPrivacyCollectedDataType</key>
+                    <string>NSPrivacyCollectedDataTypePhoneNumber</string>
+                    <key>NSPrivacyCollectedDataTypeLinked</key>
+                    <false/>
+                    <key>NSPrivacyCollectedDataTypeTracking</key>
+                    <false/>
+                    <key>NSPrivacyCollectedDataTypePurposes</key>
+                    <array>
+                        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+                    </array>
+                </dict>
+                <dict>
+                    <key>NSPrivacyCollectedDataType</key>
+                    <string>NSPrivacyCollectedDataTypePreciseLocation</string>
+                    <key>NSPrivacyCollectedDataTypeLinked</key>
+                    <false/>
+                    <key>NSPrivacyCollectedDataTypeTracking</key>
+                    <false/>
+                    <key>NSPrivacyCollectedDataTypePurposes</key>
+                    <array>
+                        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+                    </array>
+                </dict>
+            </array>
+        </privacy-manifest>
+         
+         
+    </platform>   
+    
+    <icon src="res/icon/ios/icon-57.png" platform="ios" width="57" height="57" density="mdpi" />
+
+    <preference name="KeyboardResize" value="true" />
+    <preference name="KeyboardResizeMode" value="native" />
+    <preference name="HideKeyboardFormAccessoryBar" value="false" />
+
+    <preference name="Orientation" value="portrait" />
+    <preference name="GOOGLE_MAPS_ANDROID_API_KEY" value="ENTER YOUR GOOGLE MAPS API KEY HERE" />
+    <preference name="GOOGLE_MAPS_IOS_API_KEY" value="ENTER YOUR GOOGLE MAPS API KEY HERE" />
+    
+    
+    
+    
+    <preference name="SplashScreenDelay" value="1800000" />
+    <preference name="ShowSplashScreenSpinner" value="false" />
+    <preference name="SplashMaintainAspectRatio" value="true" />
+    <preference name="SplashShowOnlyFirstTime" value="false" />
+    <preference name="AutoHideSplashScreen" value="false" />
+    
+    <preference name="cordova.plugins.diagnostic.modules" value="LOCATION" />
+
+    <preference name="deployment-target" value="12.0" />
+
+
+
+    
+    
+</widget>

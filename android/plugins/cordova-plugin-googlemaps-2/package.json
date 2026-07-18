@@ -1,0 +1,61 @@
+{
+  "name": "cordova-plugin-googlemaps-2",
+  "version": "2.9.2-dev",
+  "description": "Google Maps native SDK for Android and iOS, and Google Maps JavaScript API v3 for browser.",
+  "cordova": {
+    "id": "cordova-plugin-googlemaps-2",
+    "platforms": [
+      "android",
+      "ios",
+      "browser"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GitToTheHub/cordova-plugin-googlemaps-2.git"
+  },
+  "keywords": [
+    "google",
+    "maps",
+    "geo",
+    "google maps",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios",
+    "cordova-browser"
+  ],
+  "engines": {
+    "cordovaDependencies": {
+      "2.7.0": {
+        "cordova": ">=9.0.0",
+        "cordova-android": ">=5.1.0",
+        "cordova-ios": ">=5.1.1"
+      },
+      "2.8.0": {
+        "cordova": ">=12.0.0",
+        "cordova-android": ">=13.0.0",
+        "cordova-ios": ">=7.0.0"
+      }
+    }
+  },
+  "scripts": {
+    "test": "jest && npm run eslint",
+    "jest": "jest",
+    "test:watch": "jest --watch",
+    "eslint": "node node_modules/eslint/bin/eslint www src"
+  },
+  "author": "Masashi Katsumata, Hirbod Mirjavadi",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/GitToTheHub/cordova-plugin-googlemaps-2/issues"
+  },
+  "homepage": "https://github.com/GitToTheHub/cordova-plugin-googlemaps-2",
+  "devDependencies": {
+    "cordova-js": "^4.2.4",
+    "eslint": "^5.7.0",
+    "jest": "^23.6.0"
+  },
+  "dependencies": {
+    "cordova-common": "^3.1.0"
+  }
+}

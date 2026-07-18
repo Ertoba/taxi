@@ -1,0 +1,42 @@
+# Dependencies and generated build output
+**/node_modules/
+**/platforms/android/.gradle/
+**/platforms/android/app/build/
+**/platforms/android/build/
+**/platforms/android/app/src/main/res/xml/config.xml
+**/platforms/ios/build/
+**/Pods/
+**/DerivedData/
+**/xcuserdata/
+**/.idea/
+**/.vscode/
+**/.cache/
+
+# Local Android/iOS SDK configuration
+**/local.properties
+**/*.xcuserstate
+
+# Firebase configuration supplied per environment
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Release signing and provisioning secrets
+**/build.json
+!**/build.example.json
+**/key.properties
+**/*.jks
+**/*.keystore
+**/*.p12
+**/*.pfx
+**/*.mobileprovision
+**/*.cer
+**/*.pem
+**/*.key
+
+# Environment and local files
+**/.env
+**/.env.*
+!**/.env.example
+**/.DS_Store
+**/Thumbs.db
+*.log

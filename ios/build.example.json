@@ -1,0 +1,18 @@
+{
+  "ios": {
+    "debug": {
+      "codeSignIdentity": "Apple Development",
+      "developmentTeam": "REPLACE_WITH_TEAM_ID",
+      "packageType": "development",
+      "automaticProvisioning": true,
+      "buildFlag": []
+    },
+    "release": {
+      "codeSignIdentity": "Apple Distribution",
+      "developmentTeam": "REPLACE_WITH_TEAM_ID",
+      "packageType": "app-store",
+      "automaticProvisioning": true,
+      "buildFlag": []
+    }
+  }
+}
