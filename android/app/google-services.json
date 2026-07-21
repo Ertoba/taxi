@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "439077509047",
+    "firebase_url": "https://mili-taxi-ge-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "mili-taxi-ge",
+    "storage_bucket": "mili-taxi-ge.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:439077509047:android:fc0da202a7dd91fd773a32",
+        "android_client_info": {
+          "package_name": "ge.mili.taxi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChB0AYTCAs_8bZkuoCSHchHkPko4m53T4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:439077509047:android:6db820805f4875c2773a32",
+        "android_client_info": {
+          "package_name": "ge.mili.taxi.driver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChB0AYTCAs_8bZkuoCSHchHkPko4m53T4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
