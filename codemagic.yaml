@@ -23,7 +23,7 @@ workflows:
           flutter clean
           flutter pub get
 
-      - name: Configure Google Maps API key
+      - name: Validate Google Maps keys
         script: |
           set -e
 
@@ -32,11 +32,20 @@ workflows:
             exit 1
           fi
 
+          if [ -z "$GOOGLE_WEB_SERVICES_KEY" ]; then
+            echo "GOOGLE_WEB_SERVICES_KEY is missing"
+            exit 1
+          fi
+
+          echo "Google Maps key variables are available"
+
+      - name: Configure native Google Maps key
+        script: |
+          set -e
           /usr/libexec/PlistBuddy \
             -c "Set :GMSApiKey $GOOGLE_MAPS_API_KEY" \
             ios/Runner/Info.plist
-
-          echo "Google Maps API key configured"
+          echo "Native Google Maps key configured"
 
       - name: Install CocoaPods
         script: |
@@ -49,7 +58,10 @@ workflows:
       - name: Build iOS without code signing
         script: |
           set -e
-          flutter build ios --release --no-codesign
+          flutter build ios \
+            --release \
+            --no-codesign \
+            --dart-define=GOOGLE_WEB_SERVICES_KEY="$GOOGLE_WEB_SERVICES_KEY"
 
       - name: Package unsigned IPA
         script: |
