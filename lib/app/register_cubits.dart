@@ -10,11 +10,9 @@ import '../data/repositories/payment_repository.dart';
 import '../data/repositories/profile_repository.dart';
 import '../data/repositories/review_repository.dart';
 import '../data/repositories/vehicle_repository.dart';
-import '../presentation/cubits/auth/apple_login_cubit.dart';
 import '../presentation/cubits/auth/change_email_cubit.dart';
 import '../presentation/cubits/auth/change_phone_number_cubit.dart';
 import '../presentation/cubits/auth/email_otp_cubit.dart';
-import '../presentation/cubits/auth/google_login_cubit.dart';
 import '../presentation/cubits/auth/login_cubit.dart';
 import '../presentation/cubits/auth/otp_verify_cubit.dart';
 import '../presentation/cubits/auth/resend_otp_cubit.dart';
@@ -45,7 +43,6 @@ class RegisterCubits {
     BlocProvider(create: (context) => LanguageCubit()),
     BlocProvider(create: (context) => LCodeCubit()),
     BlocProvider(create: (context) => AuthLoginCubit(AuthRepository())),
-    BlocProvider(create: (context) => AppleLoginCubit(AuthRepository())),
     BlocProvider(create: (context) => AuthSignUpCubit(AuthRepository())),
     BlocProvider(create: (context) => AuthOtpVerifyCubit(AuthRepository())),
     BlocProvider(create: (context) => AuthResendOtpCubit(AuthRepository())),
@@ -54,7 +51,6 @@ class RegisterCubits {
     BlocProvider(create: (context) => DeleteAccountCubit(ProfileRepository())),
     BlocProvider(create: (context) => SlidersCubit(ProfileRepository())),
     BlocProvider(create: (context) => VehicleDataUpdateCubit()),
-    BlocProvider(create: (context) => GoogleLoginCubit(AuthRepository())),
     BlocProvider(create: (context) => SetCountryCubit()),
     BlocProvider(create: (context) => LogoutCubit()),
     BlocProvider(create: (context) => BookRideRealTimeDataBaseCubit()),
@@ -94,7 +90,7 @@ class RegisterCubits {
     BlocProvider(create: (context) => StaticPageCubits(ProfileRepository())),
     BlocProvider(create: (context) => CheckStatusCubit()),
     BlocProvider(create: (context) => GetRideRequestPaymentCubit()),
-    BlocProvider(create: (context) =>UpdateRideStatusInDatabaseCubit(VehicleRepository())),
+    BlocProvider(create: (context) => UpdateRideStatusInDatabaseCubit(VehicleRepository())),
     BlocProvider(create: (context) => UserMarkerCubit()),
     BlocProvider(create: (context) => LanguageCubit()),
     BlocProvider(create: (context) => FirebaseUpdateIntervalCubit()),
