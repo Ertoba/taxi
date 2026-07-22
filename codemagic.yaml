@@ -1,0 +1,70 @@
+workflows:
+  ios-unsigned:
+    name: Mili Taxi Rider iOS Unsigned IPA
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      groups:
+        - taxi_ios_secrets
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          set -e
+          flutter clean
+          flutter pub get
+
+      - name: Configure Google Maps API key
+        script: |
+          set -e
+
+          if [ -z "$GOOGLE_MAPS_API_KEY" ]; then
+            echo "GOOGLE_MAPS_API_KEY is missing"
+            exit 1
+          fi
+
+          /usr/libexec/PlistBuddy \
+            -c "Set :GMSApiKey $GOOGLE_MAPS_API_KEY" \
+            ios/Runner/Info.plist
+
+          echo "Google Maps API key configured"
+
+      - name: Install CocoaPods
+        script: |
+          set -e
+          cd ios
+          pod install --repo-update
+          cd ..
+
+      - name: Build iOS without code signing
+        script: |
+          set -e
+          flutter build ios --release --no-codesign
+
+      - name: Package unsigned IPA
+        script: |
+          set -e
+
+          if [ ! -d "build/ios/iphoneos/Runner.app" ]; then
+            echo "Runner.app was not found"
+            exit 1
+          fi
+
+          rm -rf build/ios/ipa
+          mkdir -p build/ios/ipa/Payload
+
+          cp -R \
+            build/ios/iphoneos/Runner.app \
+            build/ios/ipa/Payload/
+
+          cd build/ios/ipa
+          zip -qry ../mili-taxi-rider-unsigned.ipa Payload
+
+          echo "Rider unsigned IPA created"
+
+    artifacts:
+      - build/ios/mili-taxi-rider-unsigned.ipa
