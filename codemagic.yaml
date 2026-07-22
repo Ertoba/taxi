@@ -12,6 +12,11 @@ workflows:
       cocoapods: default
 
     scripts:
+      - name: Disable Swift Package Manager
+        script: |
+          set -e
+          flutter config --no-enable-swift-package-manager
+
       - name: Get Flutter packages
         script: |
           set -e
@@ -37,6 +42,7 @@ workflows:
         script: |
           set -e
           cd ios
+          rm -f Podfile.lock
           pod install --repo-update
           cd ..
 
