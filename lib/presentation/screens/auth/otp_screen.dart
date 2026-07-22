@@ -60,23 +60,56 @@ class _OtpScreenState extends State<OtpScreen> {
   void initState() {
     super.initState();
     textEditingOtpController.text = widget.otpValue ?? '';
+    _otpFocusNode.addListener(_handleOtpFocusChange);
     startResendTimer();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _otpFocusNode.removeListener(_handleOtpFocusChange);
     _otpFocusNode.dispose();
     textEditingOtpController.dispose();
     super.dispose();
   }
 
+  void _handleOtpFocusChange() {
+    if (!mounted || !Platform.isIOS) return;
+    setState(() => _showIosKeyboardToolbar = _otpFocusNode.hasFocus);
+  }
+
   void _dismissKeyboard() {
     _otpFocusNode.unfocus();
     FocusManager.instance.primaryFocus?.unfocus();
-    if (mounted) {
+    if (mounted && _showIosKeyboardToolbar) {
       setState(() => _showIosKeyboardToolbar = false);
     }
+  }
+
+  Widget _buildIosKeyboardToolbar() {
+    return Material(
+      elevation: 8,
+      color: const Color(0xFFF2F2F7),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 44,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _dismissKeyboard,
+              child: Text(
+                'Done'.translate(context),
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void startResendTimer() {
@@ -99,10 +132,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
-    final showToolbar = Platform.isIOS &&
-        _showIosKeyboardToolbar &&
-        keyboardHeight > 0;
+    final showToolbar = Platform.isIOS && _showIosKeyboardToolbar;
 
     return Align(
       alignment: Alignment.center,
@@ -111,8 +141,9 @@ class _OtpScreenState extends State<OtpScreen> {
         child: PopScope(
           canPop: false,
           child: Scaffold(
-            resizeToAvoidBottomInset: false,
+            resizeToAvoidBottomInset: true,
             backgroundColor: notifires.getbgcolor,
+            bottomSheet: showToolbar ? _buildIosKeyboardToolbar() : null,
             body: MultiBlocListener(
               listeners: [
                 BlocListener<AuthUserAuthenticateCubit,
@@ -223,12 +254,18 @@ class _OtpScreenState extends State<OtpScreen> {
                               TextFormField(
                                 focusNode: _otpFocusNode,
                                 onTap: () {
-                                  if (Platform.isIOS) {
+                                  if (Platform.isIOS &&
+                                      !_showIosKeyboardToolbar) {
                                     setState(() =>
                                         _showIosKeyboardToolbar = true);
                                   }
                                 },
                                 onTapOutside: (_) => _dismissKeyboard(),
+                                onChanged: (value) {
+                                  if (value.length == 6) {
+                                    _dismissKeyboard();
+                                  }
+                                },
                                 style: regular3(context).copyWith(
                                   fontSize: 20,
                                   color: notifires.getGrey2whiteColor,
@@ -323,36 +360,6 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                     ),
                   ),
-                  if (showToolbar)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: keyboardHeight,
-                      child: Material(
-                        elevation: 4,
-                        color: const Color(0xFFF2F2F7),
-                        child: SafeArea(
-                          top: false,
-                          bottom: false,
-                          child: SizedBox(
-                            height: 44,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: _dismissKeyboard,
-                                child: Text(
-                                  'Done'.translate(context),
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),
