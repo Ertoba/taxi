@@ -47,12 +47,33 @@ workflows:
             ios/Runner/Info.plist
           echo "Native Google Maps key configured"
 
-      - name: Install CocoaPods
+      - name: Configure iOS 16 deployment target
+        script: |
+          set -e
+          sed -i '' -E \
+            's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]+;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' \
+            ios/Runner.xcodeproj/project.pbxproj
+
+          /usr/libexec/PlistBuddy \
+            -c "Set :MinimumOSVersion 16.0" \
+            ios/Flutter/AppFrameworkInfo.plist
+
+          echo "iOS deployment target configured as 16.0"
+
+      - name: Install CocoaPods and verify Maps SDK
         script: |
           set -e
           cd ios
           rm -f Podfile.lock
           pod install --repo-update
+
+          if ! grep -Eq 'GoogleMaps \(10\.' Podfile.lock; then
+            echo "Google Maps SDK for iOS 10.x was not installed"
+            grep -E 'GoogleMaps|google_maps_flutter_ios' Podfile.lock || true
+            exit 1
+          fi
+
+          grep -E 'GoogleMaps|google_maps_flutter_ios' Podfile.lock
           cd ..
 
       - name: Build iOS without code signing
