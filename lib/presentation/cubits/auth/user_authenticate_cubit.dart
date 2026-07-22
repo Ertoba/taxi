@@ -25,6 +25,7 @@ class UserLoading extends AuthUserAuthenticateState {}
 class UserSucesss extends AuthUserAuthenticateState {
   final LoginModel loginModel;
   UserSucesss(this.loginModel);
+
   @override
   List<Object?> get props => [loginModel];
 }
@@ -32,6 +33,7 @@ class UserSucesss extends AuthUserAuthenticateState {
 class UserFailure extends AuthUserAuthenticateState {
   final String error;
   UserFailure(this.error);
+
   @override
   List<Object?> get props => [error];
 }
@@ -40,40 +42,43 @@ class AuthUserAuthenticateCubit extends Cubit<AuthUserAuthenticateState> {
   AuthRepository authRepository;
   AuthUserAuthenticateCubit(this.authRepository) : super(UserInitial());
 
-  Future<void> userAuthenticate(
-      {required BuildContext context,
-      required String phoneNumber,
-      required String phoneCountry,
-      required String otpValue}) async {
+  Future<void> userAuthenticate({
+    required BuildContext context,
+    required String phoneNumber,
+    required String phoneCountry,
+    required String otpValue,
+  }) async {
     try {
       clearData(context);
       emit(UserLoading());
-      var response = await authRepository.userAuthenticateLogin(
-          phoneNumber: phoneNumber,
-          phoneCountry: phoneCountry,
-          otpValue: otpValue);
+      final response = await authRepository.userAuthenticateLogin(
+        phoneNumber: phoneNumber,
+        phoneCountry: phoneCountry,
+        otpValue: otpValue,
+      );
 
-      if (response["status"] == 200) {
+      if (response['status'] == 200) {
         box.put('Remember', true);
         box.put('Firstuser', true);
-        UserData userObj = UserData();
+        final userObj = UserData();
         loginModel = LoginModel.fromJson(response);
         context.read<BookRideRealTimeDataBaseCubit>().updateUserDetails(
-            userName: loginModel!.data!.firstName,
-            userPhoneNumber:
-                "${loginModel!.data!.phoneCountry} ${loginModel!.data!.phone}",
-            userId: loginModel!.data!.id!.toInt());
-        userObj.saveLoginData("UserData", jsonEncode(response));
+              userName: loginModel!.data!.firstName,
+              userPhoneNumber:
+                  '${loginModel!.data!.phoneCountry} ${loginModel!.data!.phone}',
+              userId: loginModel!.data!.id!.toInt(),
+            );
+        userObj.saveLoginData('UserData', jsonEncode(response));
         if (loginModel != null && loginModel!.data != null) {
           token = loginModel!.data!.token ?? '';
         }
 
         emit(UserSucesss(LoginModel.fromJson(response)));
       } else {
-        emit(UserFailure(response["error"]));
+        emit(UserFailure(response['error']));
       }
     } catch (e) {
-      emit(UserFailure("Something went wrong $e "));
+      emit(UserFailure('Something went wrong $e '));
     }
   }
 
@@ -82,11 +87,9 @@ class AuthUserAuthenticateCubit extends Cubit<AuthUserAuthenticateState> {
   }
 }
 
-// set_country_cubit.dart
-
 class SetCountryState extends Equatable {
-  final String dialCode; // e.g., +91
-  final String countryCode; // e.g., IN
+  final String dialCode;
+  final String countryCode;
 
   const SetCountryState({
     required this.dialCode,
@@ -108,18 +111,22 @@ class SetCountryState extends Equatable {
 }
 
 class SetCountryCubit extends Cubit<SetCountryState> {
-  SetCountryCubit()
-      : super(const SetCountryState(
-          dialCode: "+91",
-          countryCode: "IN",
-        ));
+  static const georgia = SetCountryState(
+    dialCode: '+995',
+    countryCode: 'GE',
+  );
+
+  SetCountryCubit() : super(georgia);
 
   void setCountry({required String dialCode, required String countryCode}) {
     emit(SetCountryState(dialCode: dialCode, countryCode: countryCode));
   }
 
   void reset() {
-   }void clear() {
-    emit(const SetCountryState(dialCode: "+91", countryCode: "IN"));
+    emit(georgia);
+  }
+
+  void clear() {
+    emit(georgia);
   }
 }
