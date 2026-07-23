@@ -29,11 +29,13 @@ workflows:
         script: |
           set -e
 
-          grep -q 'version: 1.0.6+9' pubspec.yaml
+          grep -q 'version: 1.0.6+10' pubspec.yaml
           grep -q 'google_maps_flutter_ios_sdk10: ^2.18.5' pubspec.yaml
 
           ONBOARDING='lib/presentation/screens/onboarding/on_boarding_screen.dart'
           OTP='lib/presentation/screens/auth/otp_screen.dart'
+          SAFE_RIDE='lib/presentation/cubits/realtime/safe_ride_request_cubit.dart'
+          REGISTER='lib/app/register_cubits.dart'
 
           if grep -Eq 'Or continue using|GoogleLoginCubit|AppleLoginCubit|google_icon|apple_icon' "$ONBOARDING"; then
             echo "Old social-auth UI is still present in Rider onboarding"
@@ -44,7 +46,18 @@ workflows:
           grep -q 'value.length == 6' "$OTP"
           grep -q '_dismissKeyboard' "$OTP"
 
-          echo "Rider OTP and social-auth source checks passed"
+          test -f "$SAFE_RIDE"
+          grep -q 'class SafeRideRequestCubit extends RideRequestCubit' "$SAFE_RIDE"
+          grep -q '_driverRecordSafeForHive' "$SAFE_RIDE"
+          grep -q '_hiveSafeValue' "$SAFE_RIDE"
+          grep -Fq "_stringValue(data['driverId'])" "$SAFE_RIDE"
+          grep -q 'BlocProvider<RideRequestCubit>' "$REGISTER"
+          grep -q 'SafeRideRequestCubit()' "$REGISTER"
+
+          test -f assets/language/ka.json
+          test -f assets/language/en.json
+
+          echo "Rider OTP, Firebase type, Hive safety and localization checks passed"
 
       - name: Disable Swift Package Manager
         script: |
@@ -61,6 +74,19 @@ workflows:
             echo "The SDK 10-specific iOS Maps implementation was not selected"
             exit 1
           fi
+
+      - name: Parse-check Rider ride flow
+        script: |
+          set -e
+          dart format --output=none \
+            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart \
+            lib/app/register_cubits.dart
+
+          flutter analyze \
+            --no-fatal-infos \
+            --no-fatal-warnings \
+            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart \
+            lib/app/register_cubits.dart
 
       - name: Validate Google Maps keys
         script: |
@@ -95,7 +121,7 @@ workflows:
 
           /usr/libexec/PlistBuddy -c "Add :MiliGitCommit string $SOURCE_COMMIT" "$PLIST"
           /usr/libexec/PlistBuddy -c "Add :MiliShortCommit string $SHORT_COMMIT" "$PLIST"
-          /usr/libexec/PlistBuddy -c 'Add :MiliBuildNumber string 9' "$PLIST"
+          /usr/libexec/PlistBuddy -c 'Add :MiliBuildNumber string 10' "$PLIST"
 
           echo "Native Google Maps key and build fingerprint configured"
 
@@ -140,7 +166,7 @@ workflows:
           flutter build ios \
             --release \
             --no-codesign \
-            --build-number=9 \
+            --build-number=10 \
             --dart-define=GOOGLE_WEB_SERVICES_KEY="$GOOGLE_WEB_SERVICES_KEY" \
             --dart-define=MILI_GIT_COMMIT="$(git rev-parse HEAD)"
 
@@ -149,26 +175,30 @@ workflows:
           set -e
           APP='build/ios/iphoneos/Runner.app'
           PLIST="$APP/Info.plist"
+          FLUTTER_ASSETS="$APP/Frameworks/App.framework/flutter_assets"
 
           if [ ! -d "$APP" ]; then
             echo "Runner.app was not found"
             exit 1
           fi
 
-          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")" = '9'
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")" = '10'
           test "$(/usr/libexec/PlistBuddy -c 'Print :MiliGitCommit' "$PLIST")" = "$(git rev-parse HEAD)"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :MiliBuildNumber' "$PLIST")" = '9'
+          test "$(/usr/libexec/PlistBuddy -c 'Print :MiliBuildNumber' "$PLIST")" = '10'
+          test -f "$FLUTTER_ASSETS/assets/language/ka.json"
+          test -f "$FLUTTER_ASSETS/assets/language/en.json"
 
           echo "Bundle ID: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
           echo "Version: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST")"
           echo "Build: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")"
           echo "Commit: $(/usr/libexec/PlistBuddy -c 'Print :MiliGitCommit' "$PLIST")"
+          echo "Rider localization assets are bundled"
 
       - name: Package uniquely named unsigned IPA
         script: |
           set -e
           SHORT_COMMIT="$(git rev-parse --short=7 HEAD)"
-          ARTIFACT="mili-taxi-rider-${SHORT_COMMIT}-build9-unsigned.ipa"
+          ARTIFACT="mili-taxi-rider-${SHORT_COMMIT}-build10-unsigned.ipa"
 
           rm -rf build/ios/ipa
           mkdir -p build/ios/ipa/Payload
@@ -184,4 +214,4 @@ workflows:
           echo "Rider unsigned IPA created: $ARTIFACT"
 
     artifacts:
-      - build/ios/mili-taxi-rider-*-build9-unsigned.ipa
+      - build/ios/mili-taxi-rider-*-build10-unsigned.ipa
