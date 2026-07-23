@@ -29,7 +29,7 @@ workflows:
         script: |
           set -e
 
-          grep -q 'version: 1.0.6+10' pubspec.yaml
+          grep -q 'version: 1.0.6+11' pubspec.yaml
           grep -q 'google_maps_flutter_ios_sdk10: ^2.18.5' pubspec.yaml
 
           ONBOARDING='lib/presentation/screens/onboarding/on_boarding_screen.dart'
@@ -50,14 +50,20 @@ workflows:
           grep -q 'class SafeRideRequestCubit extends RideRequestCubit' "$SAFE_RIDE"
           grep -q '_driverRecordSafeForHive' "$SAFE_RIDE"
           grep -q '_hiveSafeValue' "$SAFE_RIDE"
-          grep -Fq "_stringValue(data['driverId'])" "$SAFE_RIDE"
+          grep -q '_createRealtimeRideBeforeDispatch' "$SAFE_RIDE"
+          grep -q '_persistAcceptedRideRealtime' "$SAFE_RIDE"
+          grep -q "rideMessage: ''" "$SAFE_RIDE"
+          if grep -q 'No driver accepted the ride request' "$SAFE_RIDE"; then
+            echo "Accepted ride persistence still emits a false no-driver message"
+            exit 1
+          fi
           grep -q 'BlocProvider<RideRequestCubit>' "$REGISTER"
           grep -q 'SafeRideRequestCubit()' "$REGISTER"
 
           test -f assets/language/ka.json
           test -f assets/language/en.json
 
-          echo "Rider OTP, Firebase type, Hive safety and localization checks passed"
+          echo "Rider accepted-state, Firebase, Hive and localization checks passed"
 
       - name: Disable Swift Package Manager
         script: |
@@ -125,7 +131,7 @@ workflows:
 
           /usr/libexec/PlistBuddy -c "Add :MiliGitCommit string $SOURCE_COMMIT" "$PLIST"
           /usr/libexec/PlistBuddy -c "Add :MiliShortCommit string $SHORT_COMMIT" "$PLIST"
-          /usr/libexec/PlistBuddy -c 'Add :MiliBuildNumber string 10' "$PLIST"
+          /usr/libexec/PlistBuddy -c 'Add :MiliBuildNumber string 11' "$PLIST"
 
           echo "Native Google Maps key and build fingerprint configured"
 
@@ -170,7 +176,7 @@ workflows:
           flutter build ios \
             --release \
             --no-codesign \
-            --build-number=10 \
+            --build-number=11 \
             --dart-define=GOOGLE_WEB_SERVICES_KEY="$GOOGLE_WEB_SERVICES_KEY" \
             --dart-define=MILI_GIT_COMMIT="$(git rev-parse HEAD)"
 
@@ -186,9 +192,9 @@ workflows:
             exit 1
           fi
 
-          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")" = '10'
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")" = '11'
           test "$(/usr/libexec/PlistBuddy -c 'Print :MiliGitCommit' "$PLIST")" = "$(git rev-parse HEAD)"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :MiliBuildNumber' "$PLIST")" = '10'
+          test "$(/usr/libexec/PlistBuddy -c 'Print :MiliBuildNumber' "$PLIST")" = '11'
           test -f "$FLUTTER_ASSETS/assets/language/ka.json"
           test -f "$FLUTTER_ASSETS/assets/language/en.json"
 
@@ -202,7 +208,7 @@ workflows:
         script: |
           set -e
           SHORT_COMMIT="$(git rev-parse --short=7 HEAD)"
-          ARTIFACT="mili-taxi-rider-${SHORT_COMMIT}-build10-unsigned.ipa"
+          ARTIFACT="mili-taxi-rider-${SHORT_COMMIT}-build11-unsigned.ipa"
 
           rm -rf build/ios/ipa
           mkdir -p build/ios/ipa/Payload
@@ -218,4 +224,4 @@ workflows:
           echo "Rider unsigned IPA created: $ARTIFACT"
 
     artifacts:
-      - build/ios/mili-taxi-rider-*-build10-unsigned.ipa
+      - build/ios/mili-taxi-rider-*-build11-unsigned.ipa

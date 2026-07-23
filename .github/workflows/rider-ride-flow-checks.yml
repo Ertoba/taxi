@@ -1,0 +1,60 @@
+name: Rider Ride Flow Checks
+
+on:
+  push:
+    branches:
+      - fix/rider-accepted-state-and-otp-latency
+      - main
+    paths:
+      - 'lib/presentation/cubits/realtime/**'
+      - 'lib/app/register_cubits.dart'
+      - 'pubspec.yaml'
+      - 'codemagic.yaml'
+      - '.github/workflows/rider-ride-flow-checks.yml'
+  pull_request:
+    paths:
+      - 'lib/presentation/cubits/realtime/**'
+      - 'lib/app/register_cubits.dart'
+      - 'pubspec.yaml'
+      - 'codemagic.yaml'
+      - '.github/workflows/rider-ride-flow-checks.yml'
+
+jobs:
+  flutter-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
+
+      - name: Parse targeted Rider files
+        run: |
+          dart format --output=none \
+            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart \
+            lib/app/register_cubits.dart
+
+      - name: Analyze accepted ride flow
+        run: |
+          flutter analyze --no-fatal-infos --no-fatal-warnings \
+            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart
+          flutter analyze --no-fatal-infos --no-fatal-warnings \
+            lib/app/register_cubits.dart
+
+      - name: Verify false cancellation is removed
+        run: |
+          grep -q '_createRealtimeRideBeforeDispatch' \
+            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart
+          grep -q '_persistAcceptedRideRealtime' \
+            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart
+          if grep -q 'No driver accepted the ride request' \
+            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart; then
+            echo 'Accepted ride persistence still emits a false no-driver message'
+            exit 1
+          fi
