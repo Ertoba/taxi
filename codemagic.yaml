@@ -85,7 +85,11 @@ workflows:
           flutter analyze \
             --no-fatal-infos \
             --no-fatal-warnings \
-            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart \
+            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart
+
+          flutter analyze \
+            --no-fatal-infos \
+            --no-fatal-warnings \
             lib/app/register_cubits.dart
 
       - name: Validate Google Maps keys
