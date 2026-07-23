@@ -33,6 +33,7 @@ import '../presentation/cubits/profile/edit_profile_cubit.dart';
 import '../presentation/cubits/realtime/check_ride_request_cubit.dart';
 import '../presentation/cubits/realtime/get_ride_request_status_cubit.dart';
 import '../presentation/cubits/realtime/ride_request_cubit.dart';
+import '../presentation/cubits/realtime/safe_ride_request_cubit.dart';
 import '../presentation/cubits/realtime/update_ride_request_parameter.dart';
 import '../presentation/cubits/review/review_cubit.dart';
 import '../presentation/cubits/static_page.dart';
@@ -69,7 +70,9 @@ class RegisterCubits {
     BlocProvider(create: (context) => GetServiceTypeDataCubit(VehicleRepository())),
     BlocProvider(create: (context) => GetDistanceRouteCubit()),
     BlocProvider(create: (context) => BookRideUserCubit(VehicleRepository())),
-    BlocProvider(create: (context) => RideRequestCubit()),
+    BlocProvider<RideRequestCubit>(
+      create: (context) => SafeRideRequestCubit(),
+    ),
     BlocProvider(create: (context) => GetRideRequestStatusCubit()),
     BlocProvider(create: (context) => ReviewCubit(ReviewRepository())),
     BlocProvider(create: (context) => UpdatePaymentByUserCubit(PaymentRepository())),
