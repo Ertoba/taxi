@@ -6,6 +6,7 @@ import '../../../core/utils/common_widget.dart';
 import '../../../core/utils/theme/project_color.dart';
 import '../../../core/utils/theme/theme_style.dart';
 import '../../cubits/static_page.dart';
+import 'support_chat_screen.dart';
 
 class StaticScreen extends StatefulWidget {
   final String data;
@@ -35,9 +36,7 @@ class _StaticScreenState extends State<StaticScreen> {
       onWillPop: () async {
         if (widget.isBack == true) {
           goBack();
-        } else {
-
-        }
+        } else {}
 
         return false;
       },
@@ -47,7 +46,8 @@ class _StaticScreenState extends State<StaticScreen> {
             ? CustomAppBars(
                 title: widget.data,
                 backgroundColor: notifires.getbgcolor,
-                titleColor: notifires.getGrey1whiteColor)
+                titleColor: notifires.getGrey1whiteColor,
+              )
             : AppBar(
                 title: Text(
                   widget.data.translate(context),
@@ -59,34 +59,45 @@ class _StaticScreenState extends State<StaticScreen> {
                 scrolledUnderElevation: 0,
               ),
         body: BlocBuilder<StaticPageCubits, StaticPageState>(
-            builder: (context, state) {
-          if (state is StaticPageLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (state is StaticPageSuccess) {
-            string = state.staticModel.data?.staticPage?.content ??
-                "Content not available".translate(context);
-          } else if (state is StaticPageFailure) {
-            showErrorToastMessage(state.error);
-          }
-          return ListView(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: flutter_html.Html(
-                  data: string, // Render HTML content
-                  style: {
-                    "body": flutter_html.Style(
-                      color: notifires.getwhiteblackColor,
-                      fontSize: flutter_html.FontSize(16.0),
-                    ),
-                  },
+          builder: (context, state) {
+            if (state is StaticPageLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is StaticPageSuccess) {
+              string =
+                  state.staticModel.data?.staticPage?.content ??
+                  "Content not available".translate(context);
+            } else if (state is StaticPageFailure) {
+              showErrorToastMessage(state.error);
+            }
+            return ListView(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: flutter_html.Html(
+                    data: string, // Render HTML content
+                    style: {
+                      "body": flutter_html.Style(
+                        color: notifires.getwhiteblackColor,
+                        fontSize: flutter_html.FontSize(16.0),
+                      ),
+                    },
+                  ),
                 ),
-              ),
-            ],
-          );
-        }),
+              ],
+            );
+          },
+        ),
+        floatingActionButton:
+            widget.data.toLowerCase().contains('help') ||
+                widget.data.toLowerCase().contains('support')
+            ? FloatingActionButton.extended(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SupportChatScreen()),
+                ),
+                icon: const Icon(Icons.support_agent),
+                label: Text('Live chat'.translate(context)),
+              )
+            : null,
       ),
     );
   }

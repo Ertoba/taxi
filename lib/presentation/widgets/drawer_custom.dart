@@ -30,12 +30,13 @@ class _MyDrawerState extends State<MyDrawer> {
   @override
   void initState() {
     context.read<MyImageCubit>().updateMyImage(myImage);
-    context
-        .read<BookRideRealTimeDataBaseCubit>()
-        .updateUserImageUrl(userImageUrl: myImage);
+    context.read<BookRideRealTimeDataBaseCubit>().updateUserImageUrl(
+      userImageUrl: myImage,
+    );
     context.read<UpdateRideRequestParameterCubit>().updateFirebaseUserParameter(
-        rideId: context.read<BookRideRealTimeDataBaseCubit>().state.rideId,
-        userParameter: {"userImageUrl": myImage});
+      rideId: context.read<BookRideRealTimeDataBaseCubit>().state.rideId,
+      userParameter: {"userImageUrl": myImage},
+    );
     context.read<NameCubit>().updateName(loginModel?.data?.firstName ?? "");
     context.read<EmailCubit>().updateEmail(loginModel?.data?.email ?? "");
 
@@ -45,9 +46,7 @@ class _MyDrawerState extends State<MyDrawer> {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: const BorderRadius.horizontal(
-        right: Radius.circular(50),
-      ),
+      borderRadius: const BorderRadius.horizontal(right: Radius.circular(50)),
       child: Drawer(
         width: MediaQuery.of(context).size.width * 0.6,
         backgroundColor: whiteColor,
@@ -64,13 +63,20 @@ class _MyDrawerState extends State<MyDrawer> {
                     onTap: () {
                       Navigator.of(context).pop();
                     },
-                    child: Row(children: [
-                      Icon(Icons.arrow_back_ios_new,
-                          color: blackColor, size: 15),
-                      const SizedBox(width: 4),
-                      Text("Back".translate(context),
-                          style: heading3Grey1(context))
-                    ]),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.arrow_back_ios_new,
+                          color: blackColor,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "Back".translate(context),
+                          style: heading3Grey1(context),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 20),
                   InkWell(
@@ -83,47 +89,57 @@ class _MyDrawerState extends State<MyDrawer> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         BlocBuilder<MyImageCubit, dynamic>(
-                            builder: (context, state) {
-                          return myImage.isEmpty
-                              ? Icon(
-                                  CupertinoIcons.profile_circled,
-                                  size: 60,
-                                  color: blackColor,
-                                )
-                              : SizedBox(
-                                  height: 60,
-                                  width: 60,
-                                  child: ClipOval(
-                                    child: myNetworkImage(
-                                        context.read<MyImageCubit>().state),
-                                  ),
-                                );
-                        }),
+                          builder: (context, state) {
+                            return myImage.isEmpty
+                                ? Icon(
+                                    CupertinoIcons.profile_circled,
+                                    size: 60,
+                                    color: blackColor,
+                                  )
+                                : SizedBox(
+                                    height: 60,
+                                    width: 60,
+                                    child: ClipOval(
+                                      child: myNetworkImage(
+                                        context.read<MyImageCubit>().state,
+                                      ),
+                                    ),
+                                  );
+                          },
+                        ),
                         const SizedBox(height: 10),
                         BlocBuilder<NameCubit, dynamic>(
-                            builder: (context, state) {
-                          return Row(
-                            children: [
-                              Text(context.read<NameCubit>().state,
-                                  style: headingBlack(context)
-                                      .copyWith(fontSize: 14)),
-                            ],
-                          );
-                        }),
+                          builder: (context, state) {
+                            return Row(
+                              children: [
+                                Text(
+                                  context.read<NameCubit>().state,
+                                  style: headingBlack(
+                                    context,
+                                  ).copyWith(fontSize: 14),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                         BlocBuilder<EmailCubit, dynamic>(
-                            builder: (context, state) {
-                          return Row(
-                            children: [
-                              Text(context.read<EmailCubit>().state,
-                                  style: headingBlack(context)
-                                      .copyWith(fontSize: 14)),
-                            ],
-                          );
-                        }),
+                          builder: (context, state) {
+                            return Row(
+                              children: [
+                                Text(
+                                  context.read<EmailCubit>().state,
+                                  style: headingBlack(
+                                    context,
+                                  ).copyWith(fontSize: 14),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                         const SizedBox(height: 30),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -137,9 +153,11 @@ class _MyDrawerState extends State<MyDrawer> {
                     onTap: () {
                       Navigator.of(context).pop();
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const HistoryScreen()));
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HistoryScreen(),
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -153,17 +171,12 @@ class _MyDrawerState extends State<MyDrawer> {
                     title: "About Us".translate(context),
                     onTap: () {
                       Navigator.of(context).pop();
-                      goTo(const StaticScreen(
-                        data: "About Us",
-                        isBack: true,
-                      ));
+                      goTo(const StaticScreen(data: "About Us", isBack: true));
                     },
                   ),
                 ),
                 const SizedBox(height: 8),
-                Divider(
-                  color: grey5,
-                ),
+                Divider(color: grey5),
                 const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -173,16 +186,16 @@ class _MyDrawerState extends State<MyDrawer> {
                     onTap: () {
                       Navigator.of(context).pop();
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SettingScreen()));
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingScreen(),
+                        ),
+                      );
                     },
                   ),
                 ),
                 const SizedBox(height: 8),
-                Divider(
-                  color: grey5,
-                ),
+                Divider(color: grey5),
                 const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -192,19 +205,19 @@ class _MyDrawerState extends State<MyDrawer> {
                     onTap: () {
                       Navigator.of(context).pop();
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const StaticScreen(
-                                    data: "Help and Support",
-                                    isBack: true,
-                                  )));
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const StaticScreen(
+                            data: "Help and Support",
+                            isBack: true,
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ),
                 const SizedBox(height: 8),
-                Divider(
-                  color: grey5,
-                ),
+                Divider(color: grey5),
                 const SizedBox(height: 4),
                 BlocConsumer<LogoutCubit, LogoutState>(
                   listener: (context, state) {
@@ -212,9 +225,11 @@ class _MyDrawerState extends State<MyDrawer> {
                       showErrorToastMessage("Logout Failed: ${state.error}");
                     } else if (state is LogoutSuccess) {
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LoginScreen()));
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                      );
                     }
                   },
                   builder: (context, state) {
@@ -224,21 +239,24 @@ class _MyDrawerState extends State<MyDrawer> {
                         imagePath: "assets/images/Logout.svg",
                         title: "Logout".translate(context),
                         onTap: () {
-                          showDynamicBottomSheets(context,
-                              title: "Logout"
-                                  .translate(context)
-                                  .translate(context),
-                              description: "Are you sure You Want to Logout?"
-                                  .translate(context)
-                                  .translate(context),
-                              firstButtontxt: "Cancel".translate(context),
-                              secondButtontxt: "Yes".translate(context),
-                              onpressed: () {
-                            Navigator.pop(context);
-                          }, onpressed1: () async {
-                            token = "";
-                            context.read<LogoutCubit>().logout(context);
-                          });
+                          showDynamicBottomSheets(
+                            context,
+                            title: "Logout"
+                                .translate(context)
+                                .translate(context),
+                            description: "Are you sure You Want to Logout?"
+                                .translate(context)
+                                .translate(context),
+                            firstButtontxt: "Cancel".translate(context),
+                            secondButtontxt: "Yes".translate(context),
+                            onpressed: () {
+                              Navigator.pop(context);
+                            },
+                            onpressed1: () async {
+                              token = "";
+                              context.read<LogoutCubit>().logout(context);
+                            },
+                          );
                         },
                       ),
                     );
@@ -246,7 +264,7 @@ class _MyDrawerState extends State<MyDrawer> {
                 ),
                 const SizedBox(height: 8),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -259,8 +277,12 @@ class CustomRowItem extends StatelessWidget {
   final String title;
   final VoidCallback? onTap; // Add onTap callback
 
-  const CustomRowItem(
-      {super.key, required this.imagePath, required this.title, this.onTap});
+  const CustomRowItem({
+    super.key,
+    required this.imagePath,
+    required this.title,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -268,15 +290,15 @@ class CustomRowItem extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          SvgPicture.asset(
-            imagePath,
-            width: 15,
-            height: 15,
-          ),
+          SvgPicture.asset(imagePath, width: 15, height: 15),
           const SizedBox(width: 10),
-          Text(
-            title.translate(context),
-            style: heading3Grey1(context),
+          Expanded(
+            child: Text(
+              title.translate(context),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: heading3Grey1(context),
+            ),
           ),
         ],
       ),

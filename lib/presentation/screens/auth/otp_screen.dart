@@ -8,7 +8,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ride_on/app/route_settings.dart';
 import 'package:ride_on/core/utils/translate.dart';
 
-import '../../../core/extensions/workspace.dart';
 import '../../../core/utils/common_widget.dart';
 import '../../../core/utils/theme/project_color.dart';
 import '../../../core/utils/theme/theme_style.dart';
@@ -146,8 +145,10 @@ class _OtpScreenState extends State<OtpScreen> {
             bottomSheet: showToolbar ? _buildIosKeyboardToolbar() : null,
             body: MultiBlocListener(
               listeners: [
-                BlocListener<AuthUserAuthenticateCubit,
-                    AuthUserAuthenticateState>(
+                BlocListener<
+                  AuthUserAuthenticateCubit,
+                  AuthUserAuthenticateState
+                >(
                   listener: (context, state) {
                     if (state is UserLoading) {
                       Widgets.showLoader(context);
@@ -246,9 +247,9 @@ class _OtpScreenState extends State<OtpScreen> {
                               const SizedBox(height: 10),
                               Text(
                                 '${widget.countryCode ?? ''} ${widget.number ?? ''}',
-                                style: regular3(context).copyWith(
-                                  fontWeight: FontWeight.w100,
-                                ),
+                                style: regular3(
+                                  context,
+                                ).copyWith(fontWeight: FontWeight.w100),
                               ),
                               const SizedBox(height: 20),
                               TextFormField(
@@ -256,8 +257,9 @@ class _OtpScreenState extends State<OtpScreen> {
                                 onTap: () {
                                   if (Platform.isIOS &&
                                       !_showIosKeyboardToolbar) {
-                                    setState(() =>
-                                        _showIosKeyboardToolbar = true);
+                                    setState(
+                                      () => _showIosKeyboardToolbar = true,
+                                    );
                                   }
                                 },
                                 onTapOutside: (_) => _dismissKeyboard(),
@@ -346,9 +348,9 @@ class _OtpScreenState extends State<OtpScreen> {
                                     onTap: goBack,
                                     child: Text(
                                       'Go Back'.translate(context),
-                                      style: boldstyle(context).copyWith(
-                                        color: themeColor,
-                                      ),
+                                      style: boldstyle(
+                                        context,
+                                      ).copyWith(color: themeColor),
                                     ),
                                   ),
                                 ],
@@ -378,9 +380,9 @@ class _OtpScreenState extends State<OtpScreen> {
           children: [
             Text(
               "Didn't receive code?".translate(context),
-              style: regular3(context).copyWith(
-                color: notifires.getGrey2whiteColor,
-              ),
+              style: regular3(
+                context,
+              ).copyWith(color: notifires.getGrey2whiteColor),
             ),
             const SizedBox(width: 5),
             InkWell(
@@ -391,16 +393,15 @@ class _OtpScreenState extends State<OtpScreen> {
                 });
                 startResendTimer();
                 context.read<AuthResendOtpCubit>().resendOtp(
-                      phone: widget.number,
-                      phoneCountry: _normalizedCountryCode,
-                    );
+                  phone: widget.number,
+                  phoneCountry: _normalizedCountryCode,
+                );
               },
               child: Text(
                 'Resend'.translate(context),
-                style: regular2(context).copyWith(
-                  color: blackColor,
-                  fontSize: 16,
-                ),
+                style: regular2(
+                  context,
+                ).copyWith(color: blackColor, fontSize: 16),
               ),
             ),
           ],
@@ -415,17 +416,14 @@ class _OtpScreenState extends State<OtpScreen> {
         children: [
           Text(
             'Resend code in'.translate(context),
-            style: regular3(context).copyWith(
-              color: notifires.getGrey2whiteColor,
-            ),
+            style: regular3(
+              context,
+            ).copyWith(color: notifires.getGrey2whiteColor),
           ),
           const SizedBox(width: 10),
           Text(
             '00:${_remainingTime.toString().padLeft(2, '0')}',
-            style: regular2(context).copyWith(
-              color: blackColor,
-              fontSize: 16,
-            ),
+            style: regular2(context).copyWith(color: blackColor, fontSize: 16),
           ),
         ],
       ),
@@ -443,24 +441,24 @@ class _OtpScreenState extends State<OtpScreen> {
 
     if (widget.routeString == 'Login') {
       context.read<AuthUserAuthenticateCubit>().userAuthenticate(
-            context: context,
-            phoneNumber: widget.number ?? '',
-            phoneCountry: _normalizedCountryCode,
-            otpValue: textEditingOtpController.text,
-          );
+        context: context,
+        phoneNumber: widget.number ?? '',
+        phoneCountry: _normalizedCountryCode,
+        otpValue: textEditingOtpController.text,
+      );
       return;
     }
 
     context.read<AuthOtpVerifyCubit>().otpVerification(
-          context: context,
-          phone: widget.number,
-          otpValue: textEditingOtpController.text,
-          countryCode: _normalizedCountryCode,
-          email: widget.email,
-          changeEmail: widget.changeEmail,
-          changeMobile: widget.changeMobile,
-          defaultCountry: widget.defaultCountry,
-          loginWithGoogle: widget.loginWithSocialMedia,
-        );
+      context: context,
+      phone: widget.number,
+      otpValue: textEditingOtpController.text,
+      countryCode: _normalizedCountryCode,
+      email: widget.email,
+      changeEmail: widget.changeEmail,
+      changeMobile: widget.changeMobile,
+      defaultCountry: widget.defaultCountry,
+      loginWithGoogle: widget.loginWithSocialMedia,
+    );
   }
 }

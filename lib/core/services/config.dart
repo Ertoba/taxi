@@ -1,11 +1,10 @@
 class Config {
   static const googleKey = String.fromEnvironment('GOOGLE_WEB_SERVICES_KEY');
-  static const String oneSiginalAppid =
-      '43175f7c-b7f8-4d55-832a-b97f0db93e09';
-// Temporary base domain URL for setup (please add your final URL here)
+  static const String oneSiginalAppid = '43175f7c-b7f8-4d55-832a-b97f0db93e09';
+  // Temporary base domain URL for setup (please add your final URL here)
   static const String baseDomain = 'https://taxi-api.mili.ge';
   // static const String baseDomain = 'https://innovittree.in';
-// Do not change any code below this line. ==================================================
+  // Do not change any code below this line. ==================================================
 
   static const String version = '/api/v1/';
   static const String bearerVersion = '/api/';
@@ -39,6 +38,8 @@ class Config {
   static const String getgeneralSettings = 'getgeneralSettings';
   static const String staticPage = 'StaticPage';
   static const String sos = 'sos';
+  static const String supportChat = 'support-chat';
+  static const String supportChatMessages = 'support-chat/messages';
   static const String sliders = 'sliders';
   static const String serviceTypes = 'service-types';
   static const String getItemTypesByService = 'item-types/by-service-type';

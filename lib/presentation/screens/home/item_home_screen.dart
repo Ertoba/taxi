@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lottie/lottie.dart';
 import 'package:ride_on/app/route_settings.dart';
 import 'package:ride_on/core/utils/theme/project_color.dart';
 import 'package:ride_on/core/utils/translate.dart';
@@ -41,8 +42,9 @@ class ItemHomeScreen extends StatefulWidget {
 
 class _ItemHomeScreenState extends State<ItemHomeScreen>
     with SingleTickerProviderStateMixin {
-  final ValueNotifier<LatLng> _selectedLocation =
-      ValueNotifier(const LatLng(0, 0));
+  final ValueNotifier<LatLng> _selectedLocation = ValueNotifier(
+    const LatLng(0, 0),
+  );
   static const LatLng _defaultLocation = LatLng(37.7749, -122.4194);
   Timer? _debounceTimer;
   bool showAlert = false;
@@ -68,12 +70,13 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
     _tabController.addListener(_handleTabSelection);
     _loadRecentDropLocations();
     context.read<MyImageCubit>().updateMyImage(myImage);
-    context
-        .read<BookRideRealTimeDataBaseCubit>()
-        .updateUserImageUrl(userImageUrl: myImage);
+    context.read<BookRideRealTimeDataBaseCubit>().updateUserImageUrl(
+      userImageUrl: myImage,
+    );
     context.read<UpdateRideRequestParameterCubit>().updateFirebaseUserParameter(
-        rideId: context.read<BookRideRealTimeDataBaseCubit>().state.rideId,
-        userParameter: {"userImageUrl": myImage});
+      rideId: context.read<BookRideRealTimeDataBaseCubit>().state.rideId,
+      userParameter: {"userImageUrl": myImage},
+    );
     context.read<NameCubit>().updateName(loginModel?.data?.firstName ?? "");
     context.read<EmailCubit>().updateEmail(loginModel?.data?.email ?? "");
     isNumeric = false;
@@ -101,8 +104,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
   void _loadRecentDropLocations() {
     final storedList = box.get('recent_drop_locations', defaultValue: []);
     if (storedList is List) {
-      recentDropLocations =
-          storedList.map((e) => Map<String, String>.from(e)).toList();
+      recentDropLocations = storedList
+          .map((e) => Map<String, String>.from(e))
+          .toList();
     }
     setState(() {});
   }
@@ -218,19 +222,10 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
               children: [
                 const Text("👉 "),
                 Expanded(
-                  child: Text("Open your phone's Settings".translate(context),
-                      style: regular2(context)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("👉 "),
-                Expanded(
-                  child: Text("Go to App Permissions".translate(context),
-                      style: regular2(context)),
+                  child: Text(
+                    "Open your phone's Settings".translate(context),
+                    style: regular2(context),
+                  ),
                 ),
               ],
             ),
@@ -241,8 +236,22 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                 const Text("👉 "),
                 Expanded(
                   child: Text(
-                      "Allow Location Access for this app".translate(context),
-                      style: regular2(context)),
+                    "Go to App Permissions".translate(context),
+                    style: regular2(context),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("👉 "),
+                Expanded(
+                  child: Text(
+                    "Allow Location Access for this app".translate(context),
+                    style: regular2(context),
+                  ),
                 ),
               ],
             ),
@@ -283,8 +292,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       showErrorToastMessage(
-          // ignore: use_build_context_synchronously
-          "Please enable location services".translate(context));
+        // ignore: use_build_context_synchronously
+        "Please enable location services".translate(context),
+      );
       return LocationPermission.denied;
     }
     LocationPermission permission = await Geolocator.checkPermission();
@@ -298,9 +308,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(seconds: 1), () {
       context.read<UpdateCurrentAddressCubit>().getAddressFromLatLng(
-            latitude: position.latitude,
-            longitude: position.longitude,
-          );
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
     });
   }
 
@@ -397,72 +407,75 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
       padding: const EdgeInsets.all(20.0),
       child: Row(
         children: [
-          BlocBuilder<MyImageCubit, dynamic>(builder: (context, state) {
-            return InkWell(
-              onTap: () => _scaffoldKey.currentState?.openDrawer(),
-              child: myImage.isEmpty
-                  ? Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: themeColor.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+          BlocBuilder<MyImageCubit, dynamic>(
+            builder: (context, state) {
+              return InkWell(
+                onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                child: myImage.isEmpty
+                    ? Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: themeColor.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          CupertinoIcons.profile_circled,
+                          size: 40,
+                          color: themeColor,
+                        ),
+                      )
+                    : Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: themeColor, width: 2),
+                        ),
+                        child: ClipOval(
+                          child: myNetworkImage(
+                            context.read<MyImageCubit>().state,
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        CupertinoIcons.profile_circled,
-                        size: 40,
-                        color: themeColor,
-                      ),
-                    )
-                  : Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: themeColor, width: 2),
-                      ),
-                      child: ClipOval(
-                        child:
-                            myNetworkImage(context.read<MyImageCubit>().state),
-                      ),
-                    ),
-            );
-          }),
+              );
+            },
+          ),
           const SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                BlocBuilder<NameCubit, dynamic>(builder: (context, state) {
-                  return RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Hi, ".translate(context),
-                          style: heading2Grey1(context).copyWith(
-                            fontSize: 18,
-                            color: Colors.grey[700],
+                BlocBuilder<NameCubit, dynamic>(
+                  builder: (context, state) {
+                    return RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Hi, ".translate(context),
+                            style: heading2Grey1(
+                              context,
+                            ).copyWith(fontSize: 18, color: Colors.grey[700]),
                           ),
-                        ),
-                        TextSpan(
-                          text: " ${context.read<NameCubit>().state}",
-                          style: heading2Grey1(context).copyWith(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: blackColor,
+                          TextSpan(
+                            text: " ${context.read<NameCubit>().state}",
+                            style: heading2Grey1(context).copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: blackColor,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
+                        ],
+                      ),
+                    );
+                  },
+                ),
                 const SizedBox(height: 4),
                 Text(
                   "Where do you want to go today?".translate(context),
-                  style: heading3Grey1(context).copyWith(
-                    color: grey2,
-                    fontSize: 13,
-                  ),
+                  style: heading3Grey1(
+                    context,
+                  ).copyWith(color: grey2, fontSize: 13),
                 ),
               ],
             ),
@@ -477,13 +490,13 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
       builder: (context, state) {
         if (state is UpdateCurrentAddresSuccess) {
           _currentAddress = state.currentAddress ?? '';
-          context
-              .read<BookRideRealTimeDataBaseCubit>()
-              .updatePickupAddress(pickupAddress: _currentAddress);
+          context.read<BookRideRealTimeDataBaseCubit>().updatePickupAddress(
+            pickupAddress: _currentAddress,
+          );
           context.read<BookRideRealTimeDataBaseCubit>().updatePickupLatAndLng(
-                pickupAddressLatitude: state.lat.toString(),
-                pickupAddressLongitude: state.lng.toString(),
-              );
+            pickupAddressLatitude: state.lat.toString(),
+            pickupAddressLongitude: state.lng.toString(),
+          );
           context.read<UpdateCurrentAddressCubit>().removeAddress();
 
           pickupLocation = _currentAddress;
@@ -522,26 +535,28 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                         .read<VehicleDataUpdateCubit>()
                         .updateVehicleTypeSelectedId(1);
                     context
-                        .read<SelectedAddressCubit>()
-                        .pickupAddressController
-                        .text = _currentAddress;
-                    context
-                        .read<GetSuggestionAddressCubit>()
-                        .getSuggestions("");
+                            .read<SelectedAddressCubit>()
+                            .pickupAddressController
+                            .text =
+                        _currentAddress;
+                    context.read<GetSuggestionAddressCubit>().getSuggestions(
+                      "",
+                    );
 
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => UserSearchLocation(
-                          currentAddress: _currentAddress,
-                        ),
+                        builder: (context) =>
+                            UserSearchLocation(currentAddress: _currentAddress),
                       ),
                     );
                     _loadRecentDropLocations();
                   },
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
@@ -561,8 +576,11 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                             color: themeColor.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(Icons.location_on,
-                              color: themeColor, size: 18),
+                          child: Icon(
+                            Icons.location_on,
+                            color: themeColor,
+                            size: 18,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -573,11 +591,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                                 _currentAddress.isEmpty
                                     ? "Fetching location...".translate(context)
                                     : _currentAddress.length > 40
-                                        ? "${_currentAddress.substring(0, 40)}..."
-                                        : _currentAddress,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
+                                    ? "${_currentAddress.substring(0, 40)}..."
+                                    : _currentAddress,
+                                style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(
                                       color: Colors.grey[800],
                                       fontSize: 12,
@@ -588,8 +604,11 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                             ],
                           ),
                         ),
-                        Icon(Icons.arrow_forward_ios,
-                            color: Colors.grey[400], size: 16),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.grey[400],
+                          size: 16,
+                        ),
                       ],
                     ),
                   ),
@@ -606,8 +625,6 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
 
   bool isLoadingServiceTypes = false;
 
-
-
   Widget _buildTabBar() {
     return BlocBuilder<GetServiceTypeDataCubit, GetServiceTypeDataState>(
       builder: (context, state) {
@@ -617,9 +634,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
           serviceTypes = state.itemTypes;
 
           if (serviceTypes.isNotEmpty && _selectedTab == 0) {
-            context
-                .read<GetVehicleDataCubit>()
-                .getItemTypesByService(serviceTypes[0].id.toString());
+            context.read<GetVehicleDataCubit>().getItemTypesByService(
+              serviceTypes[0].id.toString(),
+            );
           }
           context.read<GetServiceTypeDataCubit>().resetState();
         }
@@ -649,51 +666,51 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                     ],
                   )
                 : serviceTypes.isEmpty
-                    ? Center(child: Text("No Services".translate(context)))
-                    : Row(
-                        children: List.generate(serviceTypes.length, (index) {
-                          final item = serviceTypes[index];
-                          final isSelected = _selectedTab == index;
+                ? Center(child: Text("No Services".translate(context)))
+                : Row(
+                    children: List.generate(serviceTypes.length, (index) {
+                      final item = serviceTypes[index];
+                      final isSelected = _selectedTab == index;
 
-                          return Expanded(
-                            child: InkWell(
+                      return Expanded(
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(26),
+                          onTap: () {
+                            if (_selectedTab == index) return;
+                            setState(() {
+                              _selectedTab = index;
+                            });
+
+                            context
+                                .read<GetVehicleDataCubit>()
+                                .getItemTypesByService(item.id.toString());
+                            context.read<ServiceTypeId>().update(
+                              item.id.toString(),
+                            );
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeInOut,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? themeColor
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(26),
-                              onTap: () {
-                                if (_selectedTab == index) return;
-                                setState(() {
-                                  _selectedTab = index;
-                                });
-
-                                context
-                                    .read<GetVehicleDataCubit>()
-                                    .getItemTypesByService(item.id.toString());
-                                context
-                                    .read<ServiceTypeId>()
-                                    .update(item.id.toString());
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 250),
-                                curve: Curves.easeInOut,
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? themeColor
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(26),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  item.name ?? "",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: isSelected ? grey1 : grey2,
-                                  ),
-                                ),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              item.name ?? "",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected ? grey1 : grey2,
                               ),
                             ),
-                          );
-                        }),
-                      ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
           ),
         );
       },
@@ -722,31 +739,44 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
               if (recentDropLocations.isNotEmpty) _buildRecentSearchesSection(),
               const SizedBox(height: 20),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "🚗 ${"Choose Your Ride".translate(context)}"
-                        .translate(context),
-                    style: heading2Grey1(context).copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                  SizedBox(
+                    width: 54,
+                    height: 40,
+                    child: Lottie.asset(
+                      'assets/json/yellow_taxi.json',
+                      fit: BoxFit.contain,
+                      repeat: true,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "Choose Your Ride".translate(context),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: heading2Grey1(
+                        context,
+                      ).copyWith(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 15),
               BlocBuilder<GetVehicleDataCubit, GetVehicleDataState>(
-                  builder: (context, state) {
-                List<ItemTypes> itemList = [];
-                if (state is GetItemTypeSuccess && state.itemTypes.isNotEmpty) {
-                  itemList = state.itemTypes;
-                  context
-                      .read<SetVehicleCategoryCubit>()
-                      .updateSetVehicleCategoryList(itemList);
-                }
-                bool isLoading = state is GetVehicleLoading;
-                return _buildVehicleGrid(itemList, isLoading);
-              }),
+                builder: (context, state) {
+                  List<ItemTypes> itemList = [];
+                  if (state is GetItemTypeSuccess &&
+                      state.itemTypes.isNotEmpty) {
+                    itemList = state.itemTypes;
+                    context
+                        .read<SetVehicleCategoryCubit>()
+                        .updateSetVehicleCategoryList(itemList);
+                  }
+                  bool isLoading = state is GetVehicleLoading;
+                  return _buildVehicleGrid(itemList, isLoading);
+                },
+              ),
             ],
           ),
         ),
@@ -780,10 +810,7 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
         color: whiteColor,
         borderRadius: BorderRadius.circular(14),
         border: Border(
-          left: BorderSide(
-            color: Colors.green.shade600,
-            width: 4,
-          ),
+          left: BorderSide(color: Colors.green.shade600, width: 4),
         ),
         boxShadow: [
           BoxShadow(
@@ -826,11 +853,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
             "• Ensure proper packaging\n".translate(context) +
                 "• Add clear delivery instructions\n".translate(context) +
                 "• Include receiver contact info".translate(context),
-            style: regular2(context).copyWith(
-              fontSize: 12,
-              height: 1.6,
-              color: Colors.green.shade700,
-            ),
+            style: regular2(
+              context,
+            ).copyWith(fontSize: 12, height: 1.6, color: Colors.green.shade700),
           ),
         ],
       ),
@@ -845,36 +870,36 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "🚚 ${"Select Delivery Vehicle".translate(context)}"
-                  .translate(context),
-              style: heading2Grey1(context).copyWith(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
+              "🚚 ${"Select Delivery Vehicle".translate(context)}".translate(
+                context,
               ),
+              style: heading2Grey1(
+                context,
+              ).copyWith(fontSize: 15, fontWeight: FontWeight.bold),
             ),
           ],
         ),
         const SizedBox(height: 10),
         Text(
           "Choose the right vehicle for your parcel size".translate(context),
-          style: regular2(context).copyWith(
-            color: Colors.grey[600],
-            fontSize: 11,
-          ),
+          style: regular2(
+            context,
+          ).copyWith(color: Colors.grey[600], fontSize: 11),
         ),
         const SizedBox(height: 12),
         BlocBuilder<GetVehicleDataCubit, GetVehicleDataState>(
-            builder: (context, state) {
-          List<ItemTypes> itemList = [];
-          if (state is GetItemTypeSuccess && state.itemTypes.isNotEmpty) {
-            itemList = state.itemTypes;
-            context
-                .read<SetVehicleCategoryCubit>()
-                .updateSetVehicleCategoryList(itemList);
-          }
-          bool isLoading = state is GetVehicleLoading;
-          return _buildVehicleGrid(itemList, isLoading);
-        }),
+          builder: (context, state) {
+            List<ItemTypes> itemList = [];
+            if (state is GetItemTypeSuccess && state.itemTypes.isNotEmpty) {
+              itemList = state.itemTypes;
+              context
+                  .read<SetVehicleCategoryCubit>()
+                  .updateSetVehicleCategoryList(itemList);
+            }
+            bool isLoading = state is GetVehicleLoading;
+            return _buildVehicleGrid(itemList, isLoading);
+          },
+        ),
       ],
     );
   }
@@ -913,10 +938,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                   const SizedBox(width: 8),
                   Text(
                     "Recent".translate(context),
-                    style: heading3Grey1(context).copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: heading3Grey1(
+                      context,
+                    ).copyWith(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -944,10 +968,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Text(
                   "No recent searches".translate(context),
-                  style: regular2(context).copyWith(
-                    color: Colors.grey[400],
-                    fontSize: 12,
-                  ),
+                  style: regular2(
+                    context,
+                  ).copyWith(color: Colors.grey[400], fontSize: 12),
                 ),
               ),
             )
@@ -961,7 +984,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                     onTap: () => _handleRecentSearchTap(item),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 8),
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: themeColor.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
@@ -990,8 +1015,11 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          Icon(Icons.arrow_forward_ios,
-                              size: 12, color: Colors.grey[400]),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 12,
+                            color: Colors.grey[400],
+                          ),
                         ],
                       ),
                     ),
@@ -1015,9 +1043,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
     context.read<SelectedAddressCubit>().dropOffAddressController.text =
         item['address'] ?? "";
     context.read<BookRideRealTimeDataBaseCubit>().updateDropOffLatAndLng(
-          dropoffAddressLatitude: item['lat'] ?? "",
-          dropoffAddressLongitude: item['lng'] ?? "",
-        );
+      dropoffAddressLatitude: item['lat'] ?? "",
+      dropoffAddressLongitude: item['lng'] ?? "",
+    );
 
     final bookRide = context.read<BookRideRealTimeDataBaseCubit>();
     bookRide.updatePickupAddress(pickupAddress: _currentAddress);
@@ -1056,8 +1084,10 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                   });
                 },
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: themeColor,
                     borderRadius: BorderRadius.circular(8),
@@ -1107,9 +1137,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
       child: InkWell(
         onTap: () async {
           if (_selectedTab == 0) {
-            context
-                .read<VehicleDataUpdateCubit>()
-                .updateVehicleTypeSelectedId(item.id);
+            context.read<VehicleDataUpdateCubit>().updateVehicleTypeSelectedId(
+              item.id,
+            );
             context.read<SelectedAddressCubit>().pickupAddressController.text =
                 _currentAddress;
             context.read<GetSuggestionAddressCubit>().getSuggestions("");
@@ -1118,9 +1148,8 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
             await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => UserSearchLocation(
-                  currentAddress: _currentAddress,
-                ),
+                builder: (context) =>
+                    UserSearchLocation(currentAddress: _currentAddress),
               ),
             );
             _loadRecentDropLocations();
@@ -1128,9 +1157,9 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
             context.read<SelectedAddressCubit>().pickupAddressController.text =
                 _currentAddress;
             context.read<GetSuggestionAddressCubit>().getSuggestions("");
-            context
-                .read<VehicleDataUpdateCubit>()
-                .updateVehicleTypeSelectedId(item.id);
+            context.read<VehicleDataUpdateCubit>().updateVehicleTypeSelectedId(
+              item.id,
+            );
             _showParcelDetailsDialog(item.maxWeight ?? "");
           }
         },
@@ -1162,11 +1191,8 @@ class _ItemHomeScreenState extends State<ItemHomeScreen>
                     item.image ?? "",
                     width: 40,
                     height: 40,
-                    errorBuilder: (_, __, ___) => Icon(
-                      Icons.directions_car,
-                      color: themeColor,
-                      size: 30,
-                    ),
+                    errorBuilder: (_, __, ___) =>
+                        Icon(Icons.directions_car, color: themeColor, size: 30),
                   ),
                 ),
               ),
@@ -1267,7 +1293,7 @@ class _AutoImageSliderState extends State<AutoImageSlider> {
               children: [
                 PageView.builder(
                   controller: _pageController,
-                   itemCount: sliders.length,
+                  itemCount: sliders.length,
                   onPageChanged: (index) {
                     setState(() {
                       _currentIndex = index;
@@ -1284,8 +1310,10 @@ class _AutoImageSliderState extends State<AutoImageSlider> {
                             final url = slider.url;
                             if (url != null &&
                                 await canLaunchUrl(Uri.parse(url))) {
-                              await launchUrl(Uri.parse(url),
-                                  mode: LaunchMode.externalApplication);
+                              await launchUrl(
+                                Uri.parse(url),
+                                mode: LaunchMode.externalApplication,
+                              );
                             } else {}
                           },
                           child: Image.network(
@@ -1296,9 +1324,7 @@ class _AutoImageSliderState extends State<AutoImageSlider> {
                               return Shimmer.fromColors(
                                 baseColor: Colors.grey[300]!,
                                 highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  color: Colors.grey[300],
-                                ),
+                                child: Container(color: Colors.grey[300]),
                               );
                             },
                             errorBuilder: (_, __, ___) =>

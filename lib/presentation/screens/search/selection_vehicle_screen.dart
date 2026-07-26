@@ -51,53 +51,65 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
   void initState() {
     super.initState();
     _polylines = widget.polylines;
-    selectedIdIndex =
-        context.read<VehicleDataUpdateCubit>().state.vehicleSelectedId;
+    selectedIdIndex = context
+        .read<VehicleDataUpdateCubit>()
+        .state
+        .vehicleSelectedId;
     addMarkers();
   }
 
   Future<void> addMarkers() async {
-    final Uint8List markerIconDropOff =
-        await getBytesFromAsset("assets/images/dropmarker.png", 15);
-    Uint8List markerIconPickUp =
-        await getBytesFromAsset("assets/images/pickupmarker.png", 15);
+    final Uint8List markerIconDropOff = await getBytesFromAsset(
+      "assets/images/dropmarker.png",
+      15,
+    );
+    Uint8List markerIconPickUp = await getBytesFromAsset(
+      "assets/images/pickupmarker.png",
+      15,
+    );
     // ignore: use_build_context_synchronously
     final bookRideState = context.read<BookRideRealTimeDataBaseCubit>().state;
-    markers.add(Marker(
-      markerId: const MarkerId('pickup'),
-      position: LatLng(double.parse(bookRideState.pickupAddressLatitude),
-          double.parse(bookRideState.pickupAddressLongitude)),
-      icon: BitmapDescriptor.bytes(markerIconPickUp),
-      infoWindow: const InfoWindow(title: 'Pickup Location'),
-    ));
+    markers.add(
+      Marker(
+        markerId: const MarkerId('pickup'),
+        position: LatLng(
+          double.parse(bookRideState.pickupAddressLatitude),
+          double.parse(bookRideState.pickupAddressLongitude),
+        ),
+        icon: BitmapDescriptor.bytes(markerIconPickUp),
+        infoWindow: const InfoWindow(title: 'Pickup Location'),
+      ),
+    );
 
-    markers.add(Marker(
-      markerId: const MarkerId('dropoff'),
-      position: LatLng(double.parse(bookRideState.dropoffAddressLatitude),
-          double.parse(bookRideState.dropoffAddressLongitude)),
-      icon: BitmapDescriptor.bytes(markerIconDropOff),
-      infoWindow: const InfoWindow(title: 'Dropoff Location'),
-    ));
+    markers.add(
+      Marker(
+        markerId: const MarkerId('dropoff'),
+        position: LatLng(
+          double.parse(bookRideState.dropoffAddressLatitude),
+          double.parse(bookRideState.dropoffAddressLongitude),
+        ),
+        icon: BitmapDescriptor.bytes(markerIconDropOff),
+        infoWindow: const InfoWindow(title: 'Dropoff Location'),
+      ),
+    );
     moveMapAccordingPoline();
 
     setState(() {});
   }
 
   void moveMapAccordingPoline() async {
+    final driverMapCubit = context.read<DriverMapCubit>();
     final controller = await _controller.future;
 
-    final polylinePoints =
-        _polylines.expand((polyline) => polyline.points).toList();
+    final polylinePoints = _polylines
+        .expand((polyline) => polyline.points)
+        .toList();
 
-    // ignore: use_build_context_synchronously
-    final markerPositions =
-        context.read<DriverMapCubit>().state is DriverMapUpdated
-            // ignore: use_build_context_synchronously
-            ? (context.read<DriverMapCubit>().state as DriverMapUpdated)
-                .markers
-                .map((m) => m.position)
-                .toList()
-            : [];
+    final markerPositions = driverMapCubit.state is DriverMapUpdated
+        ? (driverMapCubit.state as DriverMapUpdated).markers
+              .map((m) => m.position)
+              .toList()
+        : [];
 
     final List<LatLng> allPoints = [...polylinePoints, ...markerPositions];
 
@@ -160,14 +172,18 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
                     key: const ValueKey('google_map'),
                     initialCameraPosition: CameraPosition(
                       target: LatLng(
-                        double.parse(context
-                            .read<BookRideRealTimeDataBaseCubit>()
-                            .state
-                            .pickupAddressLatitude),
-                        double.parse(context
-                            .read<BookRideRealTimeDataBaseCubit>()
-                            .state
-                            .pickupAddressLongitude),
+                        double.parse(
+                          context
+                              .read<BookRideRealTimeDataBaseCubit>()
+                              .state
+                              .pickupAddressLatitude,
+                        ),
+                        double.parse(
+                          context
+                              .read<BookRideRealTimeDataBaseCubit>()
+                              .state
+                              .pickupAddressLongitude,
+                        ),
                       ),
                       zoom: 12,
                     ),
@@ -199,7 +215,8 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
                               borderRadius: BorderRadius.circular(10),
                               color: notifires.getbgcolor,
                               border: Border.all(
-                                  color: notifires.getGrey3whiteColor),
+                                color: notifires.getGrey3whiteColor,
+                              ),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.only(left: 5),
@@ -226,8 +243,9 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
                   child: Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black26,
@@ -292,9 +310,7 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
                         ),
                         const SizedBox(height: 10),
 
-                        Divider(
-                          color: grey5,
-                        ),
+                        Divider(color: grey5),
 
                         const SizedBox(height: 10),
 
@@ -318,8 +334,9 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
                             final hasFares =
                                 fares.length > index && fares[index].isNotEmpty;
 
-                            final fare =
-                                hasFares ? fares[index]["fare"] ?? "NA" : "NA";
+                            final fare = hasFares
+                                ? fares[index]["fare"] ?? "NA"
+                                : "NA";
                             final duration = hasFares
                                 ? fares[index]["duration"] ?? "NA"
                                 : "NA";
@@ -350,9 +367,13 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
                               },
                               child: Container(
                                 margin: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? themeColor
@@ -374,10 +395,12 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
                                                   fit: BoxFit.contain,
                                                   errorBuilder: (_, __, ___) =>
                                                       SvgPicture.asset(
-                                                          "assets/images/car.svg"),
+                                                        "assets/images/car.svg",
+                                                      ),
                                                 )
                                               : SvgPicture.asset(
-                                                  "assets/images/car.svg"),
+                                                  "assets/images/car.svg",
+                                                ),
                                         ),
                                         const SizedBox(width: 10),
                                         Text(
@@ -426,7 +449,7 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
                   ),
                 );
               },
-            )
+            ),
           ],
         ),
         bottomNavigationBar: selectedIdIndex != -1
@@ -434,19 +457,25 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
                 height: 75,
                 child: Container(
                   padding: const EdgeInsets.only(
-                      left: 16, right: 15, bottom: 20, top: 5),
+                    left: 16,
+                    right: 15,
+                    bottom: 20,
+                    top: 5,
+                  ),
                   color: notifires.getbgcolor,
                   child: CustomsButtons(
                     text: isRequestInProgress
                         ? "Requesting...".translate(context)
                         : "Book Now".translate(context),
                     textColor: blackColor,
-                    backgroundColor:
-                        isRequestInProgress ? Colors.grey : themeColor,
+                    backgroundColor: isRequestInProgress
+                        ? Colors.grey
+                        : themeColor,
                     onPressed: () {
                       if (selectedIdIndex == -1) {
                         showErrorToastMessage(
-                            "Please select a vehicle type.".translate(context));
+                          "Please select a vehicle type.".translate(context),
+                        );
                         return;
                       }
                       context.read<BookRideUserCubit>().removeBookRideState();
@@ -456,34 +485,39 @@ class _SelectionVehicleScreenState extends State<SelectionVehicleScreen> {
                       context.read<RideRequestCubit>().resetState();
                       box.delete("rideId");
 
-                      goTo(SendRideRequestScreen(
-                        selectedVehicleData: widget.fareList[setIndex],
-                        statusOfRide: "",
-                      ));
+                      goTo(
+                        SendRideRequestScreen(
+                          selectedVehicleData: widget.fareList[setIndex],
+                          statusOfRide: "",
+                        ),
+                      );
                     },
                   ),
-                ))
+                ),
+              )
             : null,
       ),
     );
   }
 
   void updateRide({String? rideId, String? bookingId}) {
-    final rideRequestRef =
-        FirebaseDatabase.instance.ref().child("ride_requests");
+    final rideRequestRef = FirebaseDatabase.instance.ref().child(
+      "ride_requests",
+    );
     if (rideId != null &&
         rideId.isNotEmpty &&
         bookingId != null &&
         bookingId.isNotEmpty) {
-      rideRequestRef.child(rideId).update({
-        'bookingId': bookingId,
-        'status': 'Confirmed',
-      }).then((_) {
-        debugPrint("Ride updated successfully.");
-      }).catchError((error) {
-        debugPrint("Failed to update ride: $error");
-        showErrorToastMessage("Failed to update ride.");
-      });
+      rideRequestRef
+          .child(rideId)
+          .update({'bookingId': bookingId, 'status': 'Confirmed'})
+          .then((_) {
+            debugPrint("Ride updated successfully.");
+          })
+          .catchError((error) {
+            debugPrint("Failed to update ride: $error");
+            showErrorToastMessage("Failed to update ride.");
+          });
     }
   }
 }

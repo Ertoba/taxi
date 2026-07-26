@@ -38,7 +38,7 @@ workflows:
         script: |
           set -e
 
-          grep -q 'version: 1.0.6+11' pubspec.yaml
+          grep -q 'version: 1.0.6+12' pubspec.yaml
           grep -q 'google_maps_flutter_ios_sdk10: ^2.18.5' pubspec.yaml
 
           ONBOARDING='lib/presentation/screens/onboarding/on_boarding_screen.dart'

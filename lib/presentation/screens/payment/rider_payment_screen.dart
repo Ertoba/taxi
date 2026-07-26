@@ -882,7 +882,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
     final rideId = widget.rideId?.trim() ?? '';
     final bookingId = widget.bookingId?.trim() ?? '';
     if (rideId.isEmpty || bookingId.isEmpty) {
-      showErrorToastMessage('Unable to prepare the payment');
+      showErrorToastMessage('Unable to prepare the payment'.translate(context));
       return;
     }
 
@@ -899,11 +899,13 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
       );
     } catch (_) {
       _preparingKeepzPayment = false;
+      if (!mounted) return;
       Widgets.hideLoder(context);
-      showErrorToastMessage('Unable to prepare the payment');
+      showErrorToastMessage('Unable to prepare the payment'.translate(context));
       return;
     }
 
+    if (!mounted) return;
     final preparationState = context.read<UpdatePaymentByUserCubit>().state;
     _preparingKeepzPayment = false;
     Widgets.hideLoder(context);
@@ -913,7 +915,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
           : null;
       showErrorToastMessage(
         (message == null || message.trim().isEmpty)
-            ? 'Unable to prepare the payment'
+            ? 'Unable to prepare the payment'.translate(context)
             : message,
       );
       return;
@@ -932,6 +934,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
         child: PaymentsScreen(url: paymentUrl),
       ),
     );
+    if (!mounted) return;
     _paymentSheetOpen = false;
 
     if (!mounted || completed != true) return;
@@ -944,7 +947,8 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
     } catch (_) {
       if (mounted) {
         showErrorToastMessage(
-          'Payment was confirmed, but the ride status could not be refreshed',
+          'Payment was confirmed, but the ride status could not be refreshed'
+              .translate(context),
         );
       }
     }

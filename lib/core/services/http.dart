@@ -34,6 +34,7 @@ Future<dynamic> httpPost(path, data, {required BuildContext context}) async {
     data['longitude'] = longitudeGlobal;
 
     data['token'] = token;
+    data['lang'] = (lanBox.get('lCode') ?? 'en').toString();
 
     var response = await http.post(
       Uri.parse(url),
@@ -41,8 +42,9 @@ Future<dynamic> httpPost(path, data, {required BuildContext context}) async {
       body: jsonEncode(data),
     );
 
-    var responseData =
-        json.decode(const Utf8Codec().decode(response.bodyBytes));
+    var responseData = json.decode(
+      const Utf8Codec().decode(response.bodyBytes),
+    );
 
     if (response.statusCode == 498) {
       final newToken = await generateToken();
@@ -54,8 +56,9 @@ Future<dynamic> httpPost(path, data, {required BuildContext context}) async {
           headers: headers,
           body: jsonEncode(data),
         );
-        responseData =
-            json.decode(const Utf8Codec().decode(response.bodyBytes));
+        responseData = json.decode(
+          const Utf8Codec().decode(response.bodyBytes),
+        );
       } else {
         return {"error": "Token regeneration failed"};
       }
@@ -75,8 +78,11 @@ Future<dynamic> httpPost(path, data, {required BuildContext context}) async {
   }
 }
 
-Future<dynamic> httpGet(String path, Map<String, dynamic> data,
-    {required BuildContext context}) async {
+Future<dynamic> httpGet(
+  String path,
+  Map<String, dynamic> data, {
+  required BuildContext context,
+}) async {
   dynamic responsegetData;
   try {
     String apiBaseUrl = Config.baseUrl;
@@ -96,9 +102,12 @@ Future<dynamic> httpGet(String path, Map<String, dynamic> data,
     data['longitude'] = longitudeGlobal;
 
     data['time_zone'] = "";
+    data['lang'] = (lanBox.get('lCode') ?? 'en').toString();
     String queryString = Uri(
-        queryParameters:
-            data.map((key, value) => MapEntry(key, value.toString()))).query;
+      queryParameters: data.map(
+        (key, value) => MapEntry(key, value.toString()),
+      ),
+    ).query;
     var fullUrl = "$url?$queryString";
 
     var response = await http
@@ -106,23 +115,26 @@ Future<dynamic> httpGet(String path, Map<String, dynamic> data,
         .timeout(const Duration(seconds: 15)); // Timeout after 15 seconds
 
     if (response.statusCode == 200) {
-      responsegetData =
-          json.decode(const Utf8Codec().decode(response.bodyBytes));
+      responsegetData = json.decode(
+        const Utf8Codec().decode(response.bodyBytes),
+      );
     } else if (response.statusCode == 498) {
       final newToken = await generateToken();
       if (newToken != null) {
         bearerToken = newToken;
         headers['Authorization'] = "Bearer $bearerToken";
         response = await http.get(Uri.parse(fullUrl), headers: headers);
-        responsegetData =
-            json.decode(const Utf8Codec().decode(response.bodyBytes));
+        responsegetData = json.decode(
+          const Utf8Codec().decode(response.bodyBytes),
+        );
       } else {
         showErrorToastMessage("Token regeneration failed.");
         return {"error": "Token regeneration failed"};
       }
     } else {
-      responsegetData =
-          json.decode(const Utf8Codec().decode(response.bodyBytes));
+      responsegetData = json.decode(
+        const Utf8Codec().decode(response.bodyBytes),
+      );
 
       if (response.statusCode == 419) {
         showErrorToastMessage("Session expired. Please log in again.");
@@ -151,13 +163,11 @@ Future<String?> generateToken() async {
 
   try {
     const String url = '${Config.baseUrlForBearer}${Config.generateToken}';
-    const Map<String, String> headers = {
-      "Content-Type": "application/json",
-    };
+    const Map<String, String> headers = {"Content-Type": "application/json"};
 
     Map<String, dynamic> body = {
       "secret": Config.secretKey,
-      "user_token": token
+      "user_token": token,
     };
 
     final response = await http.post(
