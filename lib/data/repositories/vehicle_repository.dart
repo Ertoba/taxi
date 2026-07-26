@@ -8,7 +8,10 @@ class VehicleRepository {
   Future<Map<String, dynamic>> getCategories() async {
     try {
       var response = await httpGet(
-          context: navigatorKey.currentContext!, Config.getAllCategories, {});
+        context: navigatorKey.currentContext!,
+        Config.getAllCategories,
+        {},
+      );
       return response;
     } catch (e) {
       rethrow;
@@ -18,7 +21,10 @@ class VehicleRepository {
   Future<Map<String, dynamic>> getServiceType() async {
     try {
       var response = await httpGet(
-          context: navigatorKey.currentContext!, Config.serviceTypes, {});
+        context: navigatorKey.currentContext!,
+        Config.serviceTypes,
+        {},
+      );
       return response;
     } catch (e) {
       rethrow;
@@ -28,26 +34,28 @@ class VehicleRepository {
   Future<Map<String, dynamic>> getItemTypesByService(String id) async {
     try {
       var response = await httpGet(
-          context: navigatorKey.currentContext!,
-          Config.getItemTypesByService,
-          {"service_type_id": id});
+        context: navigatorKey.currentContext!,
+        Config.getItemTypesByService,
+        {"service_type_id": id},
+      );
       return response;
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<Map<String, dynamic>> getItemPrice(
-      {required int itemTypeId,
-      required double distance,
-      required BuildContext context}) async {
+  Future<Map<String, dynamic>> getItemPrice({
+    required int itemTypeId,
+    required double distance,
+    required BuildContext context,
+  }) async {
     try {
       Map<String, dynamic> mapData = {
         "item_type_id": itemTypeId,
         "distance": distance,
         "coupon_code": "",
         "wallet_amount": "",
-        "selected_currency_code": "USD"
+        "selected_currency_code": "USD",
       };
       final response = await httpPost(
         Config.getItemPrices,
@@ -61,23 +69,24 @@ class VehicleRepository {
     }
   }
 
-  Future<Map<String, dynamic>> bookRide(
-      {required int itemTypeId,
-      required String rideId,
-      required String driverId,
-      required String totalFare,
-      required String serviceTypeId,
-      required BuildContext context,
-      required String itemId,
-      required String estimatedDistance,
-      required String pickupAddress,
-      required String dropOffAddress,
-      required String date,
-      required String pickupLat,
-      required String pickupLng,
-      required String paymentMethod,
-      required String dropOffLat,
-      required String dropOffLng}) async {
+  Future<Map<String, dynamic>> bookRide({
+    required int itemTypeId,
+    required String rideId,
+    required String driverId,
+    required String totalFare,
+    required String serviceTypeId,
+    required BuildContext context,
+    required String itemId,
+    required String estimatedDistance,
+    required String pickupAddress,
+    required String dropOffAddress,
+    required String date,
+    required String pickupLat,
+    required String pickupLng,
+    required String paymentMethod,
+    required String dropOffLat,
+    required String dropOffLng,
+  }) async {
     try {
       Map<String, dynamic> mapData = {
         "ride_id": rideId,
@@ -94,7 +103,7 @@ class VehicleRepository {
         "dropoff_address": dropOffAddress,
         "service_charge": "",
         "wallet_amount": "",
-        "payment_method": "",
+        "payment_method": paymentMethod,
         "currency_code": currency,
         "coupon_code": "",
         "coupon_discount": "",
@@ -115,14 +124,16 @@ class VehicleRepository {
     }
   }
 
-  Future<Map<String, dynamic>> updateRideStatus(
-      {required BuildContext context,
-      required String bookingId,
-      required String rideStatus}) async {
+  Future<Map<String, dynamic>> updateRideStatus({
+    required BuildContext context,
+    required String bookingId,
+    required String rideStatus,
+  }) async {
     try {
-      var response = await httpPost(Config.updateBookingStatusByUser,
-          {"booking_id": bookingId, "status": rideStatus},
-          context: context);
+      var response = await httpPost(Config.updateBookingStatusByUser, {
+        "booking_id": bookingId,
+        "status": rideStatus,
+      }, context: context);
       return response;
     } catch (error) {
       rethrow;

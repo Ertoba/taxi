@@ -36,26 +36,39 @@ class UpdatePaymentFailure extends UpdatePaymentByUserState {
 class UpdatePaymentByUserCubit extends Cubit<UpdatePaymentByUserState> {
   PaymentRepository paymentRepository;
   UpdatePaymentByUserCubit(this.paymentRepository)
-      : super(UpdatePaymentInitial());
+    : super(UpdatePaymentInitial());
 
-  Future<void> updatePaymentStatusByUser(
-      {required BuildContext context,
-      required String bookingId,
-      required String paymentMethod}) async {
+  Future<void> updatePaymentStatusByUser({
+    required BuildContext context,
+    required String bookingId,
+    required String paymentMethod,
+  }) async {
     try {
       emit(UpdatePaymentLoading());
 
       var response = await paymentRepository.updatePaymentStatusByUser(
-          context: context, bookingId: bookingId, paymentMethod: paymentMethod);
+        context: context,
+        bookingId: bookingId,
+        paymentMethod: paymentMethod,
+      );
       if (response["status"] == 200) {
         emit(UpdatePaymentSuceess());
-
       } else {
-        emit(UpdatePaymentFailure(paymentMessage: response["error"]));
+        final message =
+            [response["error"], response["message"], response["ResponseMsg"]]
+                .map((value) => value?.toString().trim() ?? "")
+                .firstWhere(
+                  (value) => value.isNotEmpty,
+                  orElse: () => "Unable to update payment status.",
+                );
+        emit(UpdatePaymentFailure(paymentMessage: message));
       }
     } catch (err) {
-      emit(UpdatePaymentFailure(paymentMessage: "$err"));
-
+      emit(
+        UpdatePaymentFailure(
+          paymentMessage: "Unable to update payment status. Please try again.",
+        ),
+      );
     }
   }
 

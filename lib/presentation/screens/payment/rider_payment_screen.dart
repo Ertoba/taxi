@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ride_on/core/utils/translate.dart';
 import 'package:ride_on/presentation/cubits/payment/coupon_cubit.dart';
 import 'package:ride_on/presentation/screens/payment/payment_geteway_screen.dart';
+import 'package:ride_on/core/services/config.dart';
 
 import '../../../app/route_settings.dart' show goToWithClear;
 import '../../../core/utils/common_widget.dart';
@@ -45,6 +46,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
   double discountAmount = 0;
   bool couponApplied = false;
   bool _paymentSheetOpen = false;
+  bool _preparingKeepzPayment = false;
 
   @override
   void initState() {
@@ -855,6 +857,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
         }
         if (state is UpdatePaymentSuceess) {
           Widgets.hideLoder(context);
+          if (_preparingKeepzPayment) return;
           clearAllRiderData(context);
           showModalBottomSheet(
             context: context,
@@ -866,6 +869,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
           );
         } else if (state is UpdatePaymentFailure) {
           Widgets.hideLoder(context);
+          if (_preparingKeepzPayment) return;
           showErrorToastMessage(state.paymentMessage ?? "");
         }
       },
@@ -875,10 +879,43 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
   Future<void> _openKeepzPayment() async {
     if (_paymentSheetOpen) return;
 
-    final paymentUrl = widget.paymentUrl?.trim() ?? '';
     final rideId = widget.rideId?.trim() ?? '';
-    if (paymentUrl.isEmpty || rideId.isEmpty) {
-      showErrorToastMessage('Unable to open the payment page');
+    final bookingId = widget.bookingId?.trim() ?? '';
+    if (rideId.isEmpty || bookingId.isEmpty) {
+      showErrorToastMessage('Unable to prepare the payment');
+      return;
+    }
+
+    final paymentUrl = (widget.paymentUrl?.trim().isNotEmpty ?? false)
+        ? widget.paymentUrl!.trim()
+        : '${Config.baseDomain}/payment_methods?booking=$bookingId';
+
+    _preparingKeepzPayment = true;
+    try {
+      await context.read<UpdatePaymentByUserCubit>().updatePaymentStatusByUser(
+        context: context,
+        bookingId: bookingId,
+        paymentMethod: 'keepz',
+      );
+    } catch (_) {
+      _preparingKeepzPayment = false;
+      Widgets.hideLoder(context);
+      showErrorToastMessage('Unable to prepare the payment');
+      return;
+    }
+
+    final preparationState = context.read<UpdatePaymentByUserCubit>().state;
+    _preparingKeepzPayment = false;
+    Widgets.hideLoder(context);
+    if (preparationState is! UpdatePaymentSuceess) {
+      final message = preparationState is UpdatePaymentFailure
+          ? preparationState.paymentMessage
+          : null;
+      showErrorToastMessage(
+        (message == null || message.trim().isEmpty)
+            ? 'Unable to prepare the payment'
+            : message,
+      );
       return;
     }
 

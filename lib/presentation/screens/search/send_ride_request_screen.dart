@@ -75,6 +75,7 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
   int currentPolylineIndex = 0;
   Timer? locationUpdateTimer;
   Timer? fetchTimer;
+  StreamSubscription<DatabaseEvent>? _rideDetailsSubscription;
 
   @override
   void initState() {
@@ -169,6 +170,7 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
 
   void _handleAcceptedRide() {
     setAllLatLang();
+    _listenForRideDetails(widget.rideId.toString());
     _handleBookRideSuccess(
       context,
       widget.pickUpOtp.toString(),
@@ -182,6 +184,7 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
 
   void _handleOngoingRide() {
     setAllLatLang();
+    _listenForRideDetails(widget.rideId.toString());
     otp = widget.pickUpOtp.toString();
     dropotp = widget.dropotp.toString();
     rideId = widget.rideId.toString();
@@ -274,6 +277,7 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
   Future<void> _updateRide({
     required String updatedRideId,
     required String upDatedBookingId,
+    String? pickupOtp,
   }) async {
     if (updatedRideId.isEmpty || upDatedBookingId.isEmpty) {
       debugPrint("Invalid rideId or bookingId");
@@ -284,15 +288,46 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
       "ride_requests",
     );
     try {
-      await rideRequestRef.child(updatedRideId).update({
+      final updates = <String, dynamic>{
         'bookingId': upDatedBookingId,
         'status': 'accepted',
-      });
+      };
+      final normalizedOtp = pickupOtp?.trim() ?? '';
+      if (RegExp(r'^\d{4,8}$').hasMatch(normalizedOtp)) {
+        updates['OTP'] = normalizedOtp;
+      }
+      await rideRequestRef.child(updatedRideId).update(updates);
       debugPrint("Ride updated successfully.");
     } catch (error) {
       debugPrint("Failed to update ride: $error");
       // showErrorToastMessage("Failed to update ride.");
     }
+  }
+
+  void _listenForRideDetails(String? requestedRideId) {
+    _rideDetailsSubscription?.cancel();
+    final normalizedRideId = requestedRideId?.trim() ?? '';
+    if (normalizedRideId.isEmpty) return;
+
+    _rideDetailsSubscription = FirebaseDatabase.instance
+        .ref('ride_requests/$normalizedRideId')
+        .onValue
+        .listen((event) {
+          if (!mounted || event.snapshot.value is! Map) return;
+
+          final data = Map<String, dynamic>.from(
+            (event.snapshot.value as Map).map(
+              (key, value) => MapEntry(key.toString(), value),
+            ),
+          );
+          final remoteOtp = data['OTP']?.toString().trim() ?? '';
+          if (!RegExp(r'^\d{4,8}$').hasMatch(remoteOtp) || remoteOtp == otp) {
+            return;
+          }
+
+          setState(() => otp = remoteOtp);
+          box.put('PickOtp', remoteOtp);
+        });
   }
 
   Future<void> _fetchDistanceAndTime({
@@ -745,7 +780,12 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
       }
       _fetchDriverLocationFromRealtimeDB(rideID);
     });
-    _updateRide(updatedRideId: rideID, upDatedBookingId: bookingID.toString());
+    _listenForRideDetails(rideID);
+    _updateRide(
+      updatedRideId: rideID,
+      upDatedBookingId: bookingID.toString(),
+      pickupOtp: pikupOtp,
+    );
 
     box.put("PickOtp", pikupOtp);
     box.put("DropOtp", dropOtp);
@@ -917,6 +957,7 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
   @override
   void dispose() {
     isCurrentScreenActive = false;
+    _rideDetailsSubscription?.cancel();
     _distanceTimer?.cancel();
     fetchTimer?.cancel();
     locationUpdateTimer?.cancel();
