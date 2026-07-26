@@ -25,7 +25,8 @@ import '../../presentation/screens/Auth/login_screen.dart';
 
 Widget commonlyUserLogo() {
   return Image.asset(
-    'assets/images/appIcon.png',height: 100,
+    'assets/images/appIcon.png',
+    height: 100,
   );
 }
 
@@ -66,8 +67,10 @@ class CustomsButtons extends StatelessWidget {
                 text.translate(context),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
-                style:
-                    largeHeadingMedium.copyWith(color: textColor, fontSize: 14,fontWeight: FontWeight.normal),
+                style: largeHeadingMedium.copyWith(
+                    color: textColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal),
               ),
               if (icon != null) const SizedBox(width: 10),
               if (icon != null) Icon(icon, color: bgcolor),
@@ -148,10 +151,12 @@ var closeLoading;
 showLoading() {
   closeLoading = BotToast.showLoading();
 }
+
 showErrorToastMessage(String message) {
   BotToast.showCustomText(
     duration: const Duration(seconds: 3),
-    align: Alignment.bottomCenter.add(const Alignment(0, -0.12)), // Moves up slightly
+    align: Alignment.bottomCenter
+        .add(const Alignment(0, -0.12)), // Moves up slightly
     toastBuilder: (context) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 15), // Adds bottom padding
@@ -172,7 +177,7 @@ showToastMessage(String message) {
       child: CustomToastMessages(
         message: message,
         error:
-        false, // add this if you are supporting both success & error cases
+            false, // add this if you are supporting both success & error cases
       ),
     ),
     duration: const Duration(seconds: 3),
@@ -236,9 +241,9 @@ class _CustomToastMessagesState extends State<CustomToastMessages>
             children: [
               Container(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 margin:
-                const EdgeInsets.only(top: 20), // Space for floating text
+                    const EdgeInsets.only(top: 20), // Space for floating text
                 decoration: BoxDecoration(
                   color: whiteColor,
                   borderRadius: BorderRadius.circular(12),
@@ -265,10 +270,9 @@ class _CustomToastMessagesState extends State<CustomToastMessages>
                     Expanded(
                       child: Text(
                         widget.message.translate(context),
-                        style:   const TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
-
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
                         ),
                       ),
                     ),
@@ -277,7 +281,7 @@ class _CustomToastMessagesState extends State<CustomToastMessages>
                       child: CircleAvatar(
                         backgroundColor: color,
                         radius: 14,
-                        child:   Icon(
+                        child: Icon(
                           Icons.close,
                           color: whiteColor,
                           size: 16,
@@ -292,7 +296,9 @@ class _CustomToastMessagesState extends State<CustomToastMessages>
                 top: 0,
                 left: 16,
                 child: Text(
-                  isError ? "Error!".translate(context) : "Success!".translate(context),
+                  isError
+                      ? "Error!".translate(context)
+                      : "Success!".translate(context),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
@@ -554,10 +560,8 @@ buildShowDialog(BuildContext context) {
       barrierColor: blackColor.withOpacity(0.1),
       builder: (BuildContext context) {
         return Center(
-                child: CircularProgressIndicator(
-                    color: yelloColor2, strokeWidth: 3))
-
-            ;
+            child:
+                CircularProgressIndicator(color: yelloColor2, strokeWidth: 3));
       });
 }
 
@@ -667,7 +671,6 @@ Widget ShimmerLoader() {
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
       ),
-    
     ),
   );
 }
@@ -761,7 +764,7 @@ void goTo(Widget screen) {
   );
 }
 
-dialogExit(BuildContext context) {
+dialogExit(BuildContext context, {VoidCallback? onExit}) {
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -812,8 +815,11 @@ dialogExit(BuildContext context) {
                       child: InkWell(
                           onTap: () {
                             Navigator.pop(context);
-
-                            SystemNavigator.pop();
+                            if (onExit != null) {
+                              onExit();
+                            } else {
+                              SystemNavigator.pop();
+                            }
                           },
                           child: Container(
                               margin: const EdgeInsets.only(left: 8, right: 8),
@@ -1080,8 +1086,6 @@ Widget myAssetImage(String? image, {double? height, double? width}) {
   }
 }
 
-
-
 void showCancelRideBottomSheet({
   required BuildContext context,
   required VoidCallback onCancelRide,
@@ -1167,7 +1171,6 @@ void showCancelRideBottomSheet({
   );
 }
 
-
 Widget buildLocationRow({
   required IconData icon,
   required Color color,
@@ -1195,10 +1198,6 @@ Widget buildLocationRow({
     ],
   );
 }
-
-
-
-
 
 class DeleteConfirmationDialogs extends StatelessWidget {
   final String? desc;
@@ -1582,6 +1581,7 @@ class MapShimmerScreen extends StatelessWidget {
     );
   }
 }
+
 Future<Uint8List> getBytesFromAsset(String path, int width) async {
   ByteData data = await rootBundle.load(path);
   ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
@@ -1594,7 +1594,6 @@ Future<Uint8List> getBytesFromAsset(String path, int width) async {
 
 Widget languageButton({
   required VoidCallback onTap,
-
 }) {
   return InkWell(
     onTap: onTap,
@@ -1608,21 +1607,18 @@ Widget languageButton({
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-            Icon(Icons.language, color: themeColor, size: 18),
+          Icon(Icons.language, color: themeColor, size: 18),
           const SizedBox(width: 6),
-          BlocBuilder<LCodeCubit,String>(
-            builder: (context,state) {
-              return Text(
-                state.toUpperCase(),
-                style:   TextStyle(
-                  color: themeColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              );
-            }
-          ),
-            Icon(Icons.keyboard_arrow_down_rounded,
-              color: themeColor, size: 18),
+          BlocBuilder<LCodeCubit, String>(builder: (context, state) {
+            return Text(
+              state.toUpperCase(),
+              style: TextStyle(
+                color: themeColor,
+                fontWeight: FontWeight.w600,
+              ),
+            );
+          }),
+          Icon(Icons.keyboard_arrow_down_rounded, color: themeColor, size: 18),
         ],
       ),
     ),

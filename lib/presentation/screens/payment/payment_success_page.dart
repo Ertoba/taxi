@@ -20,30 +20,43 @@ class BookingSuccessScreen extends StatefulWidget {
 
 class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
   int time = 2;
+  Timer? _timer;
 
   @override
   void initState() {
-
     super.initState();
     startTimer();
   }
 
-  startTimer() {
-    // ignore: unused_local_variable
-    var timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+  void startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (time > 0) {
+        if (!mounted) return;
         setState(() {
           time--;
         });
       } else {
         timer.cancel();
-        goBack();
-        context.read<UpdateRideRequestParameterCubit>().updatePaymentStatus(
-            rideId: widget.rideId, paymentStatus: "collected");
-
-        // Navigator.pushNamed(context, RouteName.bottomBar);
+        try {
+          await context
+              .read<UpdateRideRequestParameterCubit>()
+              .updatePaymentStatus(
+                rideId: widget.rideId,
+                paymentStatus: 'collected',
+              );
+        } finally {
+          if (mounted) {
+            goBack();
+          }
+        }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override

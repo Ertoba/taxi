@@ -7,6 +7,7 @@ import 'package:ride_on/core/utils/translate.dart';
 import 'package:ride_on/presentation/cubits/payment/coupon_cubit.dart';
 import 'package:ride_on/presentation/screens/payment/payment_geteway_screen.dart';
 
+import '../../../app/route_settings.dart' show goToWithClear;
 import '../../../core/utils/common_widget.dart';
 import '../../../core/utils/theme/project_color.dart';
 import '../../../core/utils/theme/theme_style.dart';
@@ -64,9 +65,9 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
 
     if ((widget.rideId ?? "").isNotEmpty) {
       context.read<GetRideRequestPaymentCubit>().resetStatus();
-      context
-          .read<GetRideRequestPaymentCubit>()
-          .listenToPaymentStatusAndMethod(rideId: widget.rideId!);
+      context.read<GetRideRequestPaymentCubit>().listenToPaymentStatusAndMethod(
+        rideId: widget.rideId!,
+      );
     }
 
     originalFare = double.tryParse(widget.fare ?? '0') ?? 0.0;
@@ -91,7 +92,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
         "distance": vehicle["distance"],
         "coupon_code": "",
         "wallet_amount": "",
-        "selected_currency_code": currency
+        "selected_currency_code": currency,
       },
       context: context,
     );
@@ -113,14 +114,23 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
               context
                   .read<GetRideRequestPaymentCubit>()
                   .listenToPaymentStatusAndMethod(rideId: widget.rideId!);
-              if (paymentStatus == "Collected") {
+              if (paymentStatus == "collected") {
                 box.delete("ride_data");
                 context.read<GetPolylineCubit>().resetPolylines();
                 context.read<BookRideRealTimeDataBaseCubit>().resetState();
                 clearAllRiderData(context);
-                goTo(const ItemHomeScreen());
+                goToWithClear(const ItemHomeScreen());
               } else {
-                dialogExit(context);
+                dialogExit(
+                  context,
+                  onExit: () {
+                    box.delete("ride_data");
+                    context.read<GetPolylineCubit>().resetPolylines();
+                    context.read<BookRideRealTimeDataBaseCubit>().resetState();
+                    clearAllRiderData(context);
+                    goToWithClear(const ItemHomeScreen());
+                  },
+                );
               }
             },
           ),
@@ -145,9 +155,8 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                   enableDrag: false,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder: (context) => CustomReviewWidget(
-                    bookingId: widget.bookingId,
-                  ),
+                  builder: (context) =>
+                      CustomReviewWidget(bookingId: widget.bookingId),
                 );
               }
             },
@@ -168,8 +177,9 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                         const SizedBox(height: 20),
                         box.get("bookingCount").toString() == "1"
                             ? Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: GestureDetector(
                                   onTap: () {
                                     isShowCoupon = !isShowCoupon;
@@ -177,8 +187,11 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                                   },
                                   child: Row(
                                     children: [
-                                      Icon(Icons.local_offer_outlined,
-                                          color: redColor, size: 20),
+                                      Icon(
+                                        Icons.local_offer_outlined,
+                                        color: redColor,
+                                        size: 20,
+                                      ),
                                       const SizedBox(width: 8),
                                       Text(
                                         "Apply Coupon".translate(context),
@@ -197,7 +210,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                                               Icons.arrow_drop_down,
                                               color: blackColor,
                                               size: 26,
-                                            )
+                                            ),
                                     ],
                                   ),
                                 ),
@@ -225,8 +238,9 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                "Select a payment method to pay"
-                                    .translate(context),
+                                "Select a payment method to pay".translate(
+                                  context,
+                                ),
                                 style: heading3Grey1(context).copyWith(
                                   fontSize: 14,
                                   color: blackColor.withValues(alpha: .6),
@@ -295,10 +309,9 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                   children: [
                     Text(
                       state.acceptedDriverName,
-                      style: headingBlack(context).copyWith(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: headingBlack(
+                        context,
+                      ).copyWith(fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 4),
                     Container(
@@ -313,11 +326,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.check_circle,
-                            color: greentext,
-                            size: 16,
-                          ),
+                          Icon(Icons.check_circle, color: greentext, size: 16),
                           const SizedBox(width: 6),
                           Text(
                             "RIDE COMPLETE".translate(context),
@@ -384,11 +393,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                       color: Colors.red.shade50,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.flag,
-                      size: 20,
-                      color: Colors.red,
-                    ),
+                    child: const Icon(Icons.flag, size: 20, color: Colors.red),
                   ),
                 ],
               ),
@@ -491,15 +496,17 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                 listener: (context, state) {
                   if (state is CouponSuccessState) {
                     double discount = double.parse(
-                        state.getItemPriceData?.data?.couponDiscount ?? "0");
+                      state.getItemPriceData?.data?.couponDiscount ?? "0",
+                    );
                     _applyCouponDiscount(discount);
                     context
                         .read<UpdateRideRequestParameterCubit>()
                         .updatePaymentAmountFirebase(
-                            rideId: widget.rideId ?? "",
-                            totalFare: discountedFare.toStringAsFixed(2),
-                            discountFare: discountAmount.toString(),
-                            couponApply: "yes");
+                          rideId: widget.rideId ?? "",
+                          totalFare: discountedFare.toStringAsFixed(2),
+                          discountFare: discountAmount.toString(),
+                          couponApply: "yes",
+                        );
                     context.read<CouponCubit>().resetCoupon();
                   } else if (state is CouponFailedState) {
                     showErrorToastMessage(state.message);
@@ -512,10 +519,11 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                     context
                         .read<UpdateRideRequestParameterCubit>()
                         .updatePaymentAmountFirebase(
-                            rideId: widget.rideId ?? "",
-                            totalFare: discountedFare.toStringAsFixed(2),
-                            discountFare: discountAmount.toString(),
-                            couponApply: "no");
+                          rideId: widget.rideId ?? "",
+                          totalFare: discountedFare.toStringAsFixed(2),
+                          discountFare: discountAmount.toString(),
+                          couponApply: "no",
+                        );
                     context.read<CouponCubit>().resetCoupon();
                     setState(() {});
                   }
@@ -548,7 +556,8 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                               }
                               if (couponController.text.isEmpty) {
                                 showErrorToastMessage(
-                                    "Please enter coupon code");
+                                  "Please enter coupon code",
+                                );
                                 return;
                               }
                               context.read<CouponCubit>().applyCoupon(
@@ -558,7 +567,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                                   "distance": vehicle["distance"],
                                   "coupon_code": couponController.text,
                                   "wallet_amount": "",
-                                  "selected_currency_code": currency
+                                  "selected_currency_code": currency,
                                 },
                                 context: context,
                               );
@@ -569,8 +578,9 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                               width: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
                               ),
                             )
                           : Text(
@@ -605,10 +615,9 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
                   const SizedBox(width: 8),
                   Text(
                     "Coupon applied successfully!".translate(context),
-                    style: regular(context).copyWith(
-                      color: greentext,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: regular(
+                      context,
+                    ).copyWith(color: greentext, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -632,10 +641,9 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
         children: [
           Text(
             "Fare Breakdown".translate(context),
-            style: headingBlack(context).copyWith(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            style: headingBlack(
+              context,
+            ).copyWith(fontSize: 16, fontWeight: FontWeight.w600),
           ),
 
           const SizedBox(height: 12),
@@ -667,8 +675,12 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
     );
   }
 
-  Widget _buildFareRow(String label, String amount,
-      {bool isTotal = false, bool isDiscount = false}) {
+  Widget _buildFareRow(
+    String label,
+    String amount, {
+    bool isTotal = false,
+    bool isDiscount = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -690,8 +702,8 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
               color: isTotal
                   ? themeColor
                   : isDiscount
-                      ? greentext
-                      : blackColor.withValues(alpha: 0.8),
+                  ? greentext
+                  : blackColor.withValues(alpha: 0.8),
             ),
           ),
         ],
@@ -700,16 +712,18 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
   }
 
   Widget _buildPaymentMethods(
-      BuildContext context, PaymentMethod? selectedMethod) {
+    BuildContext context,
+    PaymentMethod? selectedMethod,
+  ) {
     return RadioGroup<PaymentMethod>(
       groupValue: selectedMethod,
       onChanged: (value) {
         if (value != null) {
           context.read<PaymentCubit>().selectMethod(value);
           context.read<UpdateRideRequestParameterCubit>().updatePaymentMehod(
-                rideId: widget.rideId ?? "",
-                paymentMethod: value == PaymentMethod.cash ? "cash" : "online",
-              );
+            rideId: widget.rideId ?? "",
+            paymentMethod: value == PaymentMethod.cash ? "cash" : "online",
+          );
         }
       },
       child: Container(
@@ -730,10 +744,9 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
           children: [
             Text(
               "Payment Method".translate(context),
-              style: headingBlack(context).copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: headingBlack(
+                context,
+              ).copyWith(fontSize: 16, fontWeight: FontWeight.w600),
             ),
 
             const SizedBox(height: 12),
@@ -801,28 +814,23 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
         ),
         title: Text(
           title,
-          style: headingBlack(context).copyWith(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          style: headingBlack(
+            context,
+          ).copyWith(fontSize: 15, fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           subtitle.translate(context),
-          style: regular(context).copyWith(
-            fontSize: 12,
-            color: blackColor.withValues(alpha: 0.6),
-          ),
+          style: regular(
+            context,
+          ).copyWith(fontSize: 12, color: blackColor.withValues(alpha: 0.6)),
         ),
-        trailing: Radio<PaymentMethod>(
-          activeColor: themeColor,
-          value: method,
-        ),
+        trailing: Radio<PaymentMethod>(activeColor: themeColor, value: method),
         onTap: () {
           context.read<PaymentCubit>().selectMethod(method);
           context.read<UpdateRideRequestParameterCubit>().updatePaymentMehod(
-                rideId: widget.rideId ?? "",
-                paymentMethod: method == PaymentMethod.cash ? "cash" : "online",
-              );
+            rideId: widget.rideId ?? "",
+            paymentMethod: method == PaymentMethod.cash ? "cash" : "online",
+          );
         },
       ),
     );
@@ -834,14 +842,14 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: CustomsButtons(
-              text: "Pay Now - $currency ${discountedFare.toStringAsFixed(2)}",
-              backgroundColor: themeColor,
-              onPressed: () {
-                goTo(PaymentsScreen(
-                  rideId: widget.rideId,
-                  url: widget.paymentUrl,
-                ));
-              }),
+            text: "Pay Now - $currency ${discountedFare.toStringAsFixed(2)}",
+            backgroundColor: themeColor,
+            onPressed: () {
+              goTo(
+                PaymentsScreen(rideId: widget.rideId, url: widget.paymentUrl),
+              );
+            },
+          ),
         );
       },
       listener: (context, state) {
@@ -856,9 +864,8 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
             enableDrag: false,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
-            builder: (context) => CustomReviewWidget(
-              bookingId: widget.bookingId,
-            ),
+            builder: (context) =>
+                CustomReviewWidget(bookingId: widget.bookingId),
           );
         } else if (state is UpdatePaymentFailure) {
           Widgets.hideLoder(context);

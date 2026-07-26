@@ -8,46 +8,44 @@ class UpdateRideRequestParameterCubit extends Cubit<String> {
   final DatabaseReference _rideRequestsRef =
       FirebaseDatabase.instance.ref().child('ride_requests');
 
-  void updatePaymentStatus(
-      {required String rideId, required String paymentStatus}) {
-    _rideRequestsRef.child(rideId).update({
+  Future<void> updatePaymentStatus(
+      {required String rideId, required String paymentStatus}) async {
+    await _rideRequestsRef.child(rideId).update({
       'paymentStatus': paymentStatus,
-    }).then((_) {
-
-    }).catchError((error) {
-
     });
-    _rideRequestsRef.child(rideId).remove();
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    await _rideRequestsRef.child(rideId).remove();
   }
+
   void removeRideRequest({required String rideId}) {
-    _rideRequestsRef.child(rideId).remove().then((_) {
-
-    }).catchError((error) {
-
-    });
+    _rideRequestsRef.child(rideId).remove().then((_) {}).catchError((error) {});
   }
 
   void updatePaymentMehod(
       {required String rideId, required String paymentMethod}) {
-    _rideRequestsRef.child(rideId).update({
-      'paymentMethod': paymentMethod,
-    }).then((_) {
-
-    }).catchError((error) {
-
-    });
+    _rideRequestsRef
+        .child(rideId)
+        .update({
+          'paymentMethod': paymentMethod,
+        })
+        .then((_) {})
+        .catchError((error) {});
   }
+
   void updatePaymentAmountFirebase(
-      {required String rideId, required String totalFare,required String couponApply,required String discountFare}) {
-    _rideRequestsRef.child(rideId).update({
-      'travelCharges': totalFare,
-      'couponApply':couponApply,
-      'discountFare':discountFare
-    }).then((_) {
-
-    }).catchError((error) {
-
-    });
+      {required String rideId,
+      required String totalFare,
+      required String couponApply,
+      required String discountFare}) {
+    _rideRequestsRef
+        .child(rideId)
+        .update({
+          'travelCharges': totalFare,
+          'couponApply': couponApply,
+          'discountFare': discountFare
+        })
+        .then((_) {})
+        .catchError((error) {});
   }
 
   Future<void> updateFirebaseUserParameter({
@@ -58,9 +56,7 @@ class UpdateRideRequestParameterCubit extends Cubit<String> {
       if (rideId.isNotEmpty) {
         await _rideRequestsRef.child(rideId).update({...userParameter});
       }
-    } catch (e) {
-
-    }
+    } catch (e) {}
   }
 
   void resetState() {

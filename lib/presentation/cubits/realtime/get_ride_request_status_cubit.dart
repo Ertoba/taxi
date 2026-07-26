@@ -9,14 +9,12 @@ class GetRideRequestStatusCubit extends Cubit<String> {
       FirebaseDatabase.instance.ref().child('ride_requests');
 
   void listenToRouteStatus({required String rideId}) {
-
     _rideRequestsRef.child(rideId).onChildChanged.listen((event) {
       final updatedKey = event.snapshot.key;
       final updatedValue = event.snapshot.value;
 
       if (updatedKey == 'status') {
         emit(updatedValue.toString());
-
       }
     });
   }
@@ -33,23 +31,20 @@ class GetRideRequestPaymentCubit extends Cubit<Map<String, String>> {
   StreamSubscription<DatabaseEvent>? _subscription;
 
   void listenToPaymentStatusAndMethod({required String rideId}) {
-
     _subscription?.cancel();
 
     _subscription =
         _database.child('ride_requests').child(rideId).onValue.listen((event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
 
-      if(data==null){
-       
+      if (data == null) {
         emit({
-          'paymentStatus': "collected",
-          'paymentMethod': "cash",
+          'paymentStatus': '',
+          'paymentMethod': '',
         });
         return;
       }
 
-    
       // ignore: unnecessary_null_comparison
       if (data != null) {
         final paymentStatus = data['paymentStatus']?.toString() ?? '';
@@ -59,8 +54,6 @@ class GetRideRequestPaymentCubit extends Cubit<Map<String, String>> {
           'paymentStatus': paymentStatus,
           'paymentMethod': paymentMethod,
         });
-
-
       }
     });
   }
