@@ -44,6 +44,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
   double discountedFare = 0;
   double discountAmount = 0;
   bool couponApplied = false;
+  bool _paymentSheetOpen = false;
 
   @override
   void initState() {
@@ -844,11 +845,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
           child: CustomsButtons(
             text: "Pay Now - $currency ${discountedFare.toStringAsFixed(2)}",
             backgroundColor: themeColor,
-            onPressed: () {
-              goTo(
-                PaymentsScreen(rideId: widget.rideId, url: widget.paymentUrl),
-              );
-            },
+            onPressed: _openKeepzPayment,
           ),
         );
       },
@@ -873,5 +870,46 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
         }
       },
     );
+  }
+
+  Future<void> _openKeepzPayment() async {
+    if (_paymentSheetOpen) return;
+
+    final paymentUrl = widget.paymentUrl?.trim() ?? '';
+    final rideId = widget.rideId?.trim() ?? '';
+    if (paymentUrl.isEmpty || rideId.isEmpty) {
+      showErrorToastMessage('Unable to open the payment page');
+      return;
+    }
+
+    _paymentSheetOpen = true;
+    final completed = await showModalBottomSheet<bool>(
+      context: context,
+      enableDrag: false,
+      isDismissible: false,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: whiteColor,
+      builder: (sheetContext) => FractionallySizedBox(
+        heightFactor: .95,
+        child: PaymentsScreen(url: paymentUrl),
+      ),
+    );
+    _paymentSheetOpen = false;
+
+    if (!mounted || completed != true) return;
+
+    try {
+      await context.read<UpdateRideRequestParameterCubit>().updatePaymentStatus(
+        rideId: rideId,
+        paymentStatus: 'collected',
+      );
+    } catch (_) {
+      if (mounted) {
+        showErrorToastMessage(
+          'Payment was confirmed, but the ride status could not be refreshed',
+        );
+      }
+    }
   }
 }

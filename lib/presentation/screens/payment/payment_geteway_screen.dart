@@ -4,15 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:ride_on/core/utils/payment_navigation.dart';
 import 'package:ride_on/core/utils/translate.dart';
-import 'package:ride_on/presentation/screens/payment/payment_success_page.dart';
 
 import '../../../core/utils/theme/project_color.dart';
 
 class PaymentsScreen extends StatefulWidget {
   final String? url;
-  final String? rideId;
 
-  const PaymentsScreen({super.key, this.url, this.rideId});
+  const PaymentsScreen({super.key, this.url});
 
   @override
   State<PaymentsScreen> createState() => _PaymentsScreenState();
@@ -38,9 +36,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     }
   }
 
-  void _closePaymentPage() {
+  void _closePaymentPage([bool completed = false]) {
     if (mounted && Navigator.of(context).canPop()) {
-      Navigator.of(context).pop(false);
+      Navigator.of(context).pop(completed);
     }
   }
 
@@ -81,7 +79,8 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
       Uri.tryParse(url?.toString() ?? ''),
     );
     if (result == PaymentNavigationResult.failure) {
-      _showPaymentError('Payment was not completed');
+      _isTerminalNavigation = true;
+      _closePaymentPage();
       return;
     }
 
@@ -90,11 +89,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     }
 
     _isTerminalNavigation = true;
-    await Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => BookingSuccessScreen(rideId: widget.rideId ?? ''),
-      ),
-    );
+    _closePaymentPage(true);
   }
 
   @override

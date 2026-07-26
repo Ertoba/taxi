@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -86,12 +85,10 @@ class _InitialScreenState extends State<InitialScreen> {
     }
   }
 
-  void _handleRideSuccess(
-      BuildContext context, CheckRideSuccess state) {
+  void _handleRideSuccess(BuildContext context, CheckRideSuccess state) {
     context.read<RideRequestCubit>().loadRideFromHive();
 
-    final bookRideCubit =
-        context.read<BookRideRealTimeDataBaseCubit>();
+    final bookRideCubit = context.read<BookRideRealTimeDataBaseCubit>();
 
     bookRideCubit.updatePickupLatAndLng(
       pickupAddressLatitude: data["pickLat"].toString(),
@@ -103,19 +100,20 @@ class _InitialScreenState extends State<InitialScreen> {
       dropoffAddressLongitude: data["dropLng"].toString(),
     );
 
-    bookRideCubit.updatePickupAddress(
-        pickupAddress: data["pickAddress"]);
-    bookRideCubit.updateDropOffAddress(
-        dropoffAddress: data["dropAddress"]);
+    bookRideCubit.updatePickupAddress(pickupAddress: data["pickAddress"]);
+    bookRideCubit.updateDropOffAddress(dropoffAddress: data["dropAddress"]);
 
-    final Map<String, dynamic> vehicle =
-        jsonDecode(box.get('selected_vehicle'));
+    final Map<String, dynamic> vehicle = jsonDecode(
+      box.get('selected_vehicle'),
+    );
 
     switch (state.status) {
       case "pending":
       case "accepted":
       case "ongoing":
       case "pick_up":
+      case "confirmed":
+      case "arrived":
         goToWithReplacement(
           SendRideRequestScreen(
             selectedVehicleData: vehicle,

@@ -16,6 +16,7 @@ import 'package:ride_on/core/utils/translate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/google_routes_service.dart';
 import '../../../core/utils/common_widget.dart';
+import '../../../core/utils/ride_lifecycle.dart';
 import '../../../core/utils/theme/project_color.dart';
 import '../../../core/utils/theme/theme_style.dart';
 import '../../cubits/book_ride_cubit.dart';
@@ -82,6 +83,7 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
     ScreenTracker.setCurrentScreen("RideTrackingScreen");
     isManuallyCancelled = false;
     isCurrentScreenActive = true;
+    rideStatus = normalizeRideStatus(widget.statusOfRide);
 
     context.read<UserMarkerCubit>().clear();
     context.read<GetPolylineCubit>().resetPolylines();
@@ -98,7 +100,10 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
       _handleFreshRide();
     } else if (status == "pending") {
       _resumePendingRide();
-    } else if (status == "accepted" || status == "pick_up") {
+    } else if (status == "accepted" ||
+        status == "pick_up" ||
+        status == "confirmed" ||
+        status == "arrived") {
       _handleAcceptedRide();
     } else if (status == "ongoing") {
       _handleOngoingRide();
@@ -347,6 +352,7 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
       final meters = Geolocator.distanceBetween(fromLat, fromLng, toLat, toLng);
       final pretty = _formatDistanceAndEta(meters, avgSpeedKmph: 40);
 
+      if (!mounted || !isCurrentScreenActive) return;
       setState(() {
         fetchDistance = pretty['distanceText'] ?? "";
         fetchDuration = pretty['durationText'] ?? "";
@@ -386,6 +392,10 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
         ),
       ),
       (timer) {
+        if (!mounted || !isCurrentScreenActive) {
+          timer.cancel();
+          return;
+        }
         if (rideStatus == "ongoing") {
           stopAutoDistanceTimer();
           return;
@@ -422,6 +432,10 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
         ),
       ),
       (timer) {
+        if (!mounted || !isCurrentScreenActive) {
+          timer.cancel();
+          return;
+        }
         if (rideStatus == "complete") {
           stopAutoDistanceTimer();
           return;
@@ -724,7 +738,11 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
     if (isSuccessFirst) return;
 
     isSuccessFirst = true;
-    fetchTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+    fetchTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!mounted || !isCurrentScreenActive) {
+        timer.cancel();
+        return;
+      }
       _fetchDriverLocationFromRealtimeDB(rideID);
     });
     _updateRide(updatedRideId: rideID, upDatedBookingId: bookingID.toString());
@@ -773,7 +791,11 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
     _fetchDriverLocationFromRealtimeDB(rideId);
 
     if (isLiveRide) return;
-    fetchTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+    fetchTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!mounted || !isCurrentScreenActive) {
+        timer.cancel();
+        return;
+      }
       _fetchDriverLocationFromRealtimeDB(rideId);
     });
     isLiveRide = true;
@@ -894,11 +916,12 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
 
   @override
   void dispose() {
+    isCurrentScreenActive = false;
+    _distanceTimer?.cancel();
     fetchTimer?.cancel();
     locationUpdateTimer?.cancel();
     locationUpdateTimer = null;
     fetchTimer = null;
-    isCurrentScreenActive = true;
     super.dispose();
   }
 
@@ -915,6 +938,10 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
     locationUpdateTimer = Timer.periodic(
       const Duration(milliseconds: animationDurationMs ~/ steps),
       (timer) {
+        if (!mounted || !isCurrentScreenActive) {
+          timer.cancel();
+          return;
+        }
         if (currentStep >= steps) {
           timer.cancel();
           setState(() {
@@ -974,6 +1001,17 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
   }
 
   Widget _buildDraggableSheet(BuildContext context) {
+    final selectedDriverId = context
+        .read<RideRequestCubit>()
+        .state
+        .selectedDriverId;
+    final showDriverDetails =
+        hasAssignedRide(
+          status: rideStatus,
+          selectedDriverId: selectedDriverId,
+        ) ||
+        otp.isNotEmpty;
+
     return DraggableScrollableSheet(
       controller: _draggableController,
       initialChildSize: 0.5,
@@ -1011,12 +1049,10 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
                     controller: scrollController,
                     children: [
                       _buildDragHandle(),
-                      if (rideStatus == "accepted")
+                      if (showDriverDetails)
                         _buildDriverInfoSection(context)
-                      else if (otp.isEmpty)
-                        _buildFindingDriverSection(context)
                       else
-                        _buildDriverInfoSection(context),
+                        _buildFindingDriverSection(context),
                       _buildBookingDetails(context),
                       _buildRideDetails(context),
                     ],
@@ -1054,7 +1090,12 @@ class _SendRideRequestScreenState extends State<SendRideRequestScreen> {
           style: heading3Grey1(context),
         ),
         const SizedBox(height: 10),
-        CountdownSegmentedBar(statusOfRide: widget.statusOfRide),
+        CountdownSegmentedBar(
+          statusOfRide: rideStatus,
+          rideId: rideId.isNotEmpty
+              ? rideId
+              : context.read<RideRequestCubit>().state.rideId,
+        ),
         const SizedBox(height: 10),
         Divider(color: grey5),
         const SizedBox(height: 10),
@@ -1657,8 +1698,13 @@ void showDriverCancelledRideDialog(BuildContext context) {
 
 class CountdownSegmentedBar extends StatefulWidget {
   final String statusOfRide;
+  final String rideId;
 
-  const CountdownSegmentedBar({super.key, required this.statusOfRide});
+  const CountdownSegmentedBar({
+    super.key,
+    required this.statusOfRide,
+    required this.rideId,
+  });
 
   @override
   State<CountdownSegmentedBar> createState() => _CountdownSegmentedBarState();
@@ -1669,8 +1715,9 @@ class _CountdownSegmentedBarState extends State<CountdownSegmentedBar>
   int totalSeconds = 60;
   int segmentCount = 5;
   late double segmentSeconds; //
-  late Timer _timer;
+  Timer? _timer;
   DateTime? _startTime;
+  bool _searchTimeoutSheetOpen = false;
 
   int get _elapsedSeconds {
     if (_startTime == null) return 0;
@@ -1693,22 +1740,25 @@ class _CountdownSegmentedBarState extends State<CountdownSegmentedBar>
     segmentCount = 5;
     // Dynamic segment duration
     segmentSeconds = totalSeconds / segmentCount;
-    _startCountdown();
+    if (isRideSearching(widget.statusOfRide)) {
+      _startCountdown();
+    }
   }
 
   void _startCountdown() {
+    _timer?.cancel();
     _startTime = DateTime.now();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       final elapsed = _elapsedSeconds;
 
       if (elapsed > totalSeconds) {
-        _timer.cancel();
+        _timer?.cancel();
       } else if (elapsed == totalSeconds) {
         setState(() {});
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) showBottomSheetMessage();
+        Future.delayed(const Duration(milliseconds: 500), () async {
+          if (mounted) await _handleSearchTimeout();
         });
-        _timer.cancel();
+        _timer?.cancel();
       } else {
         setState(() {});
       }
@@ -1716,7 +1766,7 @@ class _CountdownSegmentedBarState extends State<CountdownSegmentedBar>
   }
 
   void _resetCountdown() {
-    _timer.cancel();
+    _timer?.cancel();
     setState(() {
       _startTime = DateTime.now();
     });
@@ -1724,8 +1774,21 @@ class _CountdownSegmentedBarState extends State<CountdownSegmentedBar>
   }
 
   void _stopCountdown() {
-    if (_timer.isActive) {
-      _timer.cancel();
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  @override
+  void didUpdateWidget(covariant CountdownSegmentedBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (!isRideSearching(widget.statusOfRide)) {
+      _stopCountdown();
+      return;
+    }
+
+    if (!isRideSearching(oldWidget.statusOfRide) && _timer == null) {
+      _startCountdown();
     }
   }
 
@@ -1751,8 +1814,57 @@ class _CountdownSegmentedBarState extends State<CountdownSegmentedBar>
   double get currentSegmentProgress =>
       (_elapsedSeconds % segmentSeconds) / segmentSeconds;
 
-  void showBottomSheetMessage() {
-    showModalBottomSheet(
+  Future<void> _handleSearchTimeout() async {
+    if (_searchTimeoutSheetOpen || !mounted) return;
+
+    var currentStatus = widget.statusOfRide;
+    var selectedDriverId = context
+        .read<RideRequestCubit>()
+        .state
+        .selectedDriverId;
+    final currentRideId = widget.rideId.trim().isNotEmpty
+        ? widget.rideId.trim()
+        : context.read<RideRequestCubit>().state.rideId.trim();
+
+    if (!canShowRideSearchTimeout(
+      status: currentStatus,
+      selectedDriverId: selectedDriverId,
+    )) {
+      return;
+    }
+
+    if (currentRideId.isEmpty) {
+      return;
+    }
+
+    try {
+      final snapshot = await FirebaseDatabase.instance
+          .ref('ride_requests/$currentRideId')
+          .get();
+      if (!snapshot.exists || snapshot.value is! Map) {
+        return;
+      }
+
+      final rideData = snapshot.value as Map;
+      currentStatus = rideData['status']?.toString() ?? '';
+      selectedDriverId = rideData['selectedDriverId']?.toString() ?? '';
+    } catch (error) {
+      debugPrint(
+        'Ride search timeout verification failed (${error.runtimeType}).',
+      );
+      return;
+    }
+
+    if (!mounted ||
+        !canShowRideSearchTimeout(
+          status: currentStatus,
+          selectedDriverId: selectedDriverId,
+        )) {
+      return;
+    }
+
+    _searchTimeoutSheetOpen = true;
+    await showModalBottomSheet(
       context: context,
       backgroundColor: notifires.getbgcolor,
       builder: (context) => ClipRRect(
@@ -1824,6 +1936,7 @@ class _CountdownSegmentedBarState extends State<CountdownSegmentedBar>
         ),
       ),
     );
+    _searchTimeoutSheetOpen = false;
   }
 
   void showNoDriverFoundBottomSheet() {
@@ -1934,7 +2047,8 @@ class _CountdownSegmentedBarState extends State<CountdownSegmentedBar>
     return BlocListener<DriverNearByCubit, DriverNearByState>(
       listener: (context, state) {
         if (state is DriverUpdated) {
-          if (state.nearbyDrivers!.isEmpty) {
+          if (state.nearbyDrivers!.isEmpty &&
+              isRideSearching(widget.statusOfRide)) {
             _stopCountdown();
             showNoDriverFoundBottomSheet();
 
