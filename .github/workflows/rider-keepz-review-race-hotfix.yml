@@ -1,0 +1,103 @@
+name: Apply Rider Keepz review race fix
+
+on:
+  push:
+    paths:
+      - .github/workflows/rider-keepz-review-race-hotfix.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rider-keepz-review-race-hotfix
+  cancel-in-progress: false
+
+jobs:
+  patch-main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Patch Rider payment modal lifecycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          payment = Path('lib/presentation/screens/payment/rider_payment_screen.dart')
+          text = payment.read_text()
+
+          old = """        if (state is UpdatePaymentSuceess) {
+          Widgets.hideLoder(context);
+          if (_preparingKeepzPayment) return;
+          clearAllRiderData(context);
+          showModalBottomSheet(
+            context: context,
+            enableDrag: false,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) =>
+                CustomReviewWidget(bookingId: widget.bookingId),
+          );
+        } else if (state is UpdatePaymentFailure) {
+"""
+
+          new = """        if (state is UpdatePaymentSuceess) {
+          // This success only means the Keepz checkout was prepared.
+          // The review sheet is opened by the Firebase `collected` event
+          // after the gateway confirms the actual payment.
+          Widgets.hideLoder(context);
+        } else if (state is UpdatePaymentFailure) {
+"""
+
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected one payment success listener block, found {text.count(old)}')
+
+          payment.write_text(text.replace(old, new, 1))
+
+          pubspec = Path('pubspec.yaml')
+          pubspec_text = pubspec.read_text()
+          old_version = 'version: 1.0.7+14'
+          new_version = 'version: 1.0.8+15'
+          if pubspec_text.count(old_version) != 1:
+              raise SystemExit('Expected Rider version 1.0.7+14 exactly once')
+          pubspec.write_text(pubspec_text.replace(old_version, new_version, 1))
+
+          Path('.github/workflows/rider-keepz-review-race-hotfix.yml').unlink()
+          PY
+
+          git diff --check
+
+      - name: Validate changed Dart source
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Format and analyze
+        shell: bash
+        run: |
+          set -euo pipefail
+          dart format lib/presentation/screens/payment/rider_payment_screen.dart
+          flutter pub get
+          flutter analyze lib/presentation/screens/payment/rider_payment_screen.dart lib/presentation/cubits/payment/payment_cubit.dart
+          git diff --check
+
+      - name: Commit fix to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            lib/presentation/screens/payment/rider_payment_screen.dart \
+            pubspec.yaml \
+            pubspec.lock \
+            .github/workflows/rider-keepz-review-race-hotfix.yml
+          git commit -m "Prevent review sheet before Keepz payment success"
+          git push origin HEAD:main
