@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - .github/workflows/rider-keepz-review-race-hotfix.yml
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
