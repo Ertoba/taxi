@@ -51,6 +51,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
   @override
   void initState() {
     super.initState();
+    context.read<UpdatePaymentByUserCubit>().resetState();
 
     final bookingCount = box.get("bookingCount") ?? "0";
     final savedCoupon = box.get("coupon") ?? "";
@@ -714,6 +715,22 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
     );
   }
 
+  Future<void> _selectPaymentMethod(PaymentMethod method) async {
+    if (!mounted) return;
+
+    context.read<PaymentCubit>().selectMethod(method);
+    context.read<UpdateRideRequestParameterCubit>().updatePaymentMehod(
+      rideId: widget.rideId ?? "",
+      paymentMethod: method == PaymentMethod.cash ? "cash" : "online",
+    );
+
+    if (method != PaymentMethod.online) return;
+
+    await Future<void>.delayed(Duration.zero);
+    if (!mounted) return;
+    await _openKeepzPayment();
+  }
+
   Widget _buildPaymentMethods(
     BuildContext context,
     PaymentMethod? selectedMethod,
@@ -722,11 +739,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
       groupValue: selectedMethod,
       onChanged: (value) {
         if (value != null) {
-          context.read<PaymentCubit>().selectMethod(value);
-          context.read<UpdateRideRequestParameterCubit>().updatePaymentMehod(
-            rideId: widget.rideId ?? "",
-            paymentMethod: value == PaymentMethod.cash ? "cash" : "online",
-          );
+          _selectPaymentMethod(value);
         }
       },
       child: Container(
@@ -829,11 +842,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
         ),
         trailing: Radio<PaymentMethod>(activeColor: themeColor, value: method),
         onTap: () {
-          context.read<PaymentCubit>().selectMethod(method);
-          context.read<UpdateRideRequestParameterCubit>().updatePaymentMehod(
-            rideId: widget.rideId ?? "",
-            paymentMethod: method == PaymentMethod.cash ? "cash" : "online",
-          );
+          _selectPaymentMethod(method);
         },
       ),
     );
@@ -877,11 +886,13 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
   }
 
   Future<void> _openKeepzPayment() async {
-    if (_paymentSheetOpen) return;
+    if (_paymentSheetOpen || _preparingKeepzPayment) return;
+    _preparingKeepzPayment = true;
 
     final rideId = widget.rideId?.trim() ?? '';
     final bookingId = widget.bookingId?.trim() ?? '';
     if (rideId.isEmpty || bookingId.isEmpty) {
+      _preparingKeepzPayment = false;
       showErrorToastMessage('Unable to prepare the payment'.translate(context));
       return;
     }
@@ -890,7 +901,6 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
         ? widget.paymentUrl!.trim()
         : '${Config.baseDomain}/payment_methods?booking=$bookingId';
 
-    _preparingKeepzPayment = true;
     try {
       await context.read<UpdatePaymentByUserCubit>().updatePaymentStatusByUser(
         context: context,
