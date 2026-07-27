@@ -715,7 +715,7 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
     );
   }
 
-  Future<void> _selectPaymentMethod(PaymentMethod method) async {
+  void _selectPaymentMethod(PaymentMethod method) {
     if (!mounted) return;
 
     context.read<PaymentCubit>().selectMethod(method);
@@ -723,12 +723,6 @@ class _RiderPaymentScreenState extends State<RiderPaymentScreen> {
       rideId: widget.rideId ?? "",
       paymentMethod: method == PaymentMethod.cash ? "cash" : "online",
     );
-
-    if (method != PaymentMethod.online) return;
-
-    await Future<void>.delayed(Duration.zero);
-    if (!mounted) return;
-    await _openKeepzPayment();
   }
 
   Widget _buildPaymentMethods(
