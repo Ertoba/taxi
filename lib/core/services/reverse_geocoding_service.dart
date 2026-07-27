@@ -16,14 +16,39 @@ class ReverseGeocodingService {
       latitude: latitude,
       longitude: longitude,
     );
-    if (nativeAddress != null && nativeAddress.isNotEmpty) {
+
+    if (_isSpecificAddress(nativeAddress)) {
       return nativeAddress;
     }
 
-    return _resolveWithGoogle(
+    final googleAddress = await _resolveWithGoogle(
       latitude: latitude,
       longitude: longitude,
     );
+    if (googleAddress != null && googleAddress.isNotEmpty) {
+      return googleAddress;
+    }
+
+    // A generic native value is still better than leaving the field empty
+    // when the network fallback is unavailable.
+    return nativeAddress;
+  }
+
+  static bool _isSpecificAddress(String? address) {
+    if (address == null || address.trim().isEmpty) return false;
+
+    final parts = address
+        .split(',')
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .toList(growable: false);
+
+    final hasPlusCode = RegExp(
+      r'\b[23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,3}\b',
+      caseSensitive: false,
+    ).hasMatch(address);
+
+    return hasPlusCode || parts.length >= 3;
   }
 
   static Future<String?> _resolveWithNativeGeocoder({
@@ -120,6 +145,15 @@ class ReverseGeocodingService {
         if (types.any(specificTypes.contains)) {
           return address;
         }
+      }
+
+      final compoundCode = data['plus_code'] is Map<String, dynamic>
+          ? (data['plus_code'] as Map<String, dynamic>)['compound_code']
+              ?.toString()
+              .trim()
+          : null;
+      if (compoundCode != null && compoundCode.isNotEmpty) {
+        return compoundCode;
       }
 
       final first = results.first;
