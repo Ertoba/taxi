@@ -23,7 +23,8 @@ workflows:
     scripts:
       - name: Print source identity
         script: |
-          set -e
+          set -euo pipefail
+
           SOURCE_COMMIT="$(git rev-parse HEAD)"
           echo "Codemagic commit: ${CM_COMMIT:-not-set}"
           echo "Checked out commit: $SOURCE_COMMIT"
@@ -36,15 +37,25 @@ workflows:
 
       - name: Validate Rider fixes in source
         script: |
-          set -e
+          set -euo pipefail
 
-          grep -q 'version: 1.0.6+12' pubspec.yaml
+          APP_FULL_VERSION="$(awk '/^version:/ { print $2; exit }' pubspec.yaml)"
+
+          if ! printf '%s\n' "$APP_FULL_VERSION" | \
+            grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\+[0-9]+$'; then
+            echo "Invalid or missing Rider version in pubspec.yaml: $APP_FULL_VERSION"
+            exit 1
+          fi
+
+          echo "Rider source version: $APP_FULL_VERSION"
           grep -q 'google_maps_flutter_ios_sdk10: ^2.18.5' pubspec.yaml
 
           ONBOARDING='lib/presentation/screens/onboarding/on_boarding_screen.dart'
           OTP='lib/presentation/screens/auth/otp_screen.dart'
           SAFE_RIDE='lib/presentation/cubits/realtime/safe_ride_request_cubit.dart'
           REGISTER='lib/app/register_cubits.dart'
+          PAYMENT_CUBIT='lib/presentation/cubits/payment/payment_cubit.dart'
+          PAYMENT_SCREEN='lib/presentation/screens/payment/rider_payment_screen.dart'
 
           if grep -Eq 'Or continue using|GoogleLoginCubit|AppleLoginCubit|google_icon|apple_icon' "$ONBOARDING"; then
             echo "Old social-auth UI is still present in Rider onboarding"
@@ -62,26 +73,36 @@ workflows:
           grep -q '_createRealtimeRideBeforeDispatch' "$SAFE_RIDE"
           grep -q '_persistAcceptedRideRealtime' "$SAFE_RIDE"
           grep -q "rideMessage: ''" "$SAFE_RIDE"
+
           if grep -q 'No driver accepted the ride request' "$SAFE_RIDE"; then
             echo "Accepted ride persistence still emits a false no-driver message"
             exit 1
           fi
+
           grep -q 'BlocProvider<RideRequestCubit>' "$REGISTER"
           grep -q 'SafeRideRequestCubit()' "$REGISTER"
+
+          test -f "$PAYMENT_CUBIT"
+          test -f "$PAYMENT_SCREEN"
+          grep -Fq 'await Future<void>.delayed(Duration.zero);' "$PAYMENT_CUBIT"
+          grep -Fq 'onPressed: _openKeepzPayment' "$PAYMENT_SCREEN"
+          grep -Fq 'if (_preparingKeepzPayment) return;' "$PAYMENT_SCREEN"
+          grep -Fq 'if (state["paymentStatus"] == "collected")' "$PAYMENT_SCREEN"
 
           test -f assets/language/ka.json
           test -f assets/language/en.json
 
-          echo "Rider accepted-state, Firebase, Hive and localization checks passed"
+          echo "Rider accepted-state, payment flow, Firebase, Hive and localization checks passed"
 
       - name: Disable Swift Package Manager
         script: |
-          set -e
+          set -euo pipefail
           flutter config --no-enable-swift-package-manager
 
       - name: Get Flutter packages
         script: |
-          set -e
+          set -euo pipefail
+
           flutter clean
           flutter pub get
 
@@ -90,33 +111,34 @@ workflows:
             exit 1
           fi
 
-      - name: Parse-check Rider ride flow
+      - name: Parse-check Rider ride and payment flow
         script: |
-          set -e
+          set -euo pipefail
+
           dart format --output=none \
             lib/presentation/cubits/realtime/safe_ride_request_cubit.dart \
-            lib/app/register_cubits.dart
+            lib/app/register_cubits.dart \
+            lib/presentation/cubits/payment/payment_cubit.dart \
+            lib/presentation/screens/payment/rider_payment_screen.dart
 
           flutter analyze \
             --no-fatal-infos \
             --no-fatal-warnings \
-            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart
-
-          flutter analyze \
-            --no-fatal-infos \
-            --no-fatal-warnings \
-            lib/app/register_cubits.dart
+            lib/presentation/cubits/realtime/safe_ride_request_cubit.dart \
+            lib/app/register_cubits.dart \
+            lib/presentation/cubits/payment/payment_cubit.dart \
+            lib/presentation/screens/payment/rider_payment_screen.dart
 
       - name: Validate Google Maps keys
         script: |
-          set -e
+          set -euo pipefail
 
-          if [ -z "$GOOGLE_MAPS_API_KEY" ]; then
+          if [ -z "${GOOGLE_MAPS_API_KEY:-}" ]; then
             echo "GOOGLE_MAPS_API_KEY is missing"
             exit 1
           fi
 
-          if [ -z "$GOOGLE_WEB_SERVICES_KEY" ]; then
+          if [ -z "${GOOGLE_WEB_SERVICES_KEY:-}" ]; then
             echo "GOOGLE_WEB_SERVICES_KEY is missing"
             exit 1
           fi
@@ -125,10 +147,13 @@ workflows:
 
       - name: Configure native key and build fingerprint
         script: |
-          set -e
+          set -euo pipefail
+
           PLIST='ios/Runner/Info.plist'
           SOURCE_COMMIT="$(git rev-parse HEAD)"
           SHORT_COMMIT="$(git rev-parse --short=7 HEAD)"
+          APP_FULL_VERSION="$(awk '/^version:/ { print $2; exit }' pubspec.yaml)"
+          APP_BUILD_NUMBER="${APP_FULL_VERSION##*+}"
 
           /usr/libexec/PlistBuddy \
             -c "Set :GMSApiKey $GOOGLE_MAPS_API_KEY" \
@@ -140,13 +165,15 @@ workflows:
 
           /usr/libexec/PlistBuddy -c "Add :MiliGitCommit string $SOURCE_COMMIT" "$PLIST"
           /usr/libexec/PlistBuddy -c "Add :MiliShortCommit string $SHORT_COMMIT" "$PLIST"
-          /usr/libexec/PlistBuddy -c 'Add :MiliBuildNumber string 11' "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :MiliBuildNumber string $APP_BUILD_NUMBER" "$PLIST"
 
-          echo "Native Google Maps key and build fingerprint configured"
+          echo "Native Google Maps key configured"
+          echo "Rider build number: $APP_BUILD_NUMBER"
 
       - name: Configure iOS 16 deployment target
         script: |
-          set -e
+          set -euo pipefail
+
           sed -i '' -E \
             's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]+;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' \
             ios/Runner.xcodeproj/project.pbxproj
@@ -159,7 +186,8 @@ workflows:
 
       - name: Install CocoaPods and verify Maps SDK
         script: |
-          set -e
+          set -euo pipefail
+
           cd ios
           rm -f Podfile.lock
           pod install --repo-update
@@ -181,29 +209,40 @@ workflows:
 
       - name: Build iOS without code signing
         script: |
-          set -e
+          set -euo pipefail
+
+          APP_FULL_VERSION="$(awk '/^version:/ { print $2; exit }' pubspec.yaml)"
+          APP_VERSION="${APP_FULL_VERSION%%+*}"
+          APP_BUILD_NUMBER="${APP_FULL_VERSION##*+}"
+
           flutter build ios \
             --release \
             --no-codesign \
-            --build-number=11 \
+            --build-name="$APP_VERSION" \
+            --build-number="$APP_BUILD_NUMBER" \
             --dart-define=GOOGLE_WEB_SERVICES_KEY="$GOOGLE_WEB_SERVICES_KEY" \
             --dart-define=MILI_GIT_COMMIT="$(git rev-parse HEAD)"
 
       - name: Verify built Rider app
         script: |
-          set -e
+          set -euo pipefail
+
           APP='build/ios/iphoneos/Runner.app'
           PLIST="$APP/Info.plist"
           FLUTTER_ASSETS="$APP/Frameworks/App.framework/flutter_assets"
+          APP_FULL_VERSION="$(awk '/^version:/ { print $2; exit }' pubspec.yaml)"
+          APP_VERSION="${APP_FULL_VERSION%%+*}"
+          APP_BUILD_NUMBER="${APP_FULL_VERSION##*+}"
 
           if [ ! -d "$APP" ]; then
             echo "Runner.app was not found"
             exit 1
           fi
 
-          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")" = '11'
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST")" = "$APP_VERSION"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")" = "$APP_BUILD_NUMBER"
           test "$(/usr/libexec/PlistBuddy -c 'Print :MiliGitCommit' "$PLIST")" = "$(git rev-parse HEAD)"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :MiliBuildNumber' "$PLIST")" = '11'
+          test "$(/usr/libexec/PlistBuddy -c 'Print :MiliBuildNumber' "$PLIST")" = "$APP_BUILD_NUMBER"
           test -f "$FLUTTER_ASSETS/assets/language/ka.json"
           test -f "$FLUTTER_ASSETS/assets/language/en.json"
 
@@ -215,9 +254,12 @@ workflows:
 
       - name: Package uniquely named unsigned IPA
         script: |
-          set -e
+          set -euo pipefail
+
           SHORT_COMMIT="$(git rev-parse --short=7 HEAD)"
-          ARTIFACT="mili-taxi-rider-${SHORT_COMMIT}-build11-unsigned.ipa"
+          APP_FULL_VERSION="$(awk '/^version:/ { print $2; exit }' pubspec.yaml)"
+          APP_BUILD_NUMBER="${APP_FULL_VERSION##*+}"
+          ARTIFACT="mili-taxi-rider-${SHORT_COMMIT}-build${APP_BUILD_NUMBER}-unsigned.ipa"
 
           rm -rf build/ios/ipa
           mkdir -p build/ios/ipa/Payload
@@ -233,4 +275,4 @@ workflows:
           echo "Rider unsigned IPA created: $ARTIFACT"
 
     artifacts:
-      - build/ios/mili-taxi-rider-*-build11-unsigned.ipa
+      - build/ios/mili-taxi-rider-*-build*-unsigned.ipa
