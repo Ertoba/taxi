@@ -1,0 +1,70 @@
+name: Correct Rider Pay Now flow
+
+on:
+  push:
+    paths:
+      - .github/workflows/rider-pay-now-only-hotfix.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rider-pay-now-only-hotfix
+  cancel-in-progress: false
+
+jobs:
+  patch-main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Keep checkout behind Pay Now
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected one source block in {path}, found {count}")
+              file.write_text(text.replace(old, new, 1))
+
+          screen = "lib/presentation/screens/payment/rider_payment_screen.dart"
+
+          replace_once(
+              screen,
+              """  Future<void> _selectPaymentMethod(PaymentMethod method) async {\n    if (!mounted) return;\n\n    context.read<PaymentCubit>().selectMethod(method);\n    context.read<UpdateRideRequestParameterCubit>().updatePaymentMehod(\n      rideId: widget.rideId ?? \"\",\n      paymentMethod: method == PaymentMethod.cash ? \"cash\" : \"online\",\n    );\n\n    if (method != PaymentMethod.online) return;\n\n    await Future<void>.delayed(Duration.zero);\n    if (!mounted) return;\n    await _openKeepzPayment();\n  }\n""",
+              """  void _selectPaymentMethod(PaymentMethod method) {\n    if (!mounted) return;\n\n    context.read<PaymentCubit>().selectMethod(method);\n    context.read<UpdateRideRequestParameterCubit>().updatePaymentMehod(\n      rideId: widget.rideId ?? \"\",\n      paymentMethod: method == PaymentMethod.cash ? \"cash\" : \"online\",\n    );\n  }\n""",
+          )
+
+          replace_once(
+              "pubspec.yaml",
+              "version: 1.0.7+13",
+              "version: 1.0.7+14",
+          )
+
+          Path('.github/workflows/rider-pay-now-only-hotfix.yml').unlink()
+          PY
+
+          git diff --check
+
+      - name: Commit correction to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            lib/presentation/screens/payment/rider_payment_screen.dart \
+            pubspec.yaml \
+            .github/workflows/rider-pay-now-only-hotfix.yml
+          git commit -m "Open Keepz checkout only from Pay Now"
+          git push origin HEAD:main
