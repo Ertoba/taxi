@@ -53,6 +53,12 @@ class UpdatePaymentByUserCubit extends Cubit<UpdatePaymentByUserState> {
       );
       if (response["status"] == 200) {
         emit(UpdatePaymentSuceess());
+
+        // Bloc listeners receive emitted states asynchronously. Yield once so
+        // the Rider payment screen consumes this preparation-only success
+        // while its `_preparingKeepzPayment` guard is still active. This keeps
+        // the review sheet closed until the real `collected` payment event.
+        await Future<void>.delayed(Duration.zero);
       } else {
         final message =
             [response["error"], response["message"], response["ResponseMsg"]]
