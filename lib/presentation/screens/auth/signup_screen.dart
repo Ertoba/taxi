@@ -127,11 +127,15 @@ class _SignUpState extends State<SignUp> {
                             const SizedBox(height: 130),
                             commonlyUserLogo(),
                             const SizedBox(height: 10),
-                            Text('Get Started'.translate(context),
+                            Text(
+                                'Get Started'
+                                    .translate(context)
+                                    .toUpperCase(),
                                 style: heading1(context)),
                             Text(
                               'Create an account to continue.'
-                                  .translate(context),
+                                  .translate(context)
+                                  .toUpperCase(),
                               style: regular2(context).copyWith(
                                 color: notifires.getGrey3whiteColor,
                               ),
@@ -142,7 +146,7 @@ class _SignUpState extends State<SignUp> {
                                 setState(() => isNumeric = false);
                               },
                               inputAlignment: TextAlign.start,
-                              txt: 'Name'.translate(context),
+                              txt: 'Name'.translate(context).toUpperCase(),
                               icons: Icon(
                                 Icons.person_2_outlined,
                                 color: blackColor,
@@ -212,7 +216,7 @@ class _SignUpState extends State<SignUp> {
                                 setState(() => isNumeric = false);
                               },
                               inputAlignment: TextAlign.start,
-                              txt: 'Email'.translate(context),
+                              txt: 'Email'.translate(context).toUpperCase(),
                               icons: Icon(
                                 Icons.mail_outline_outlined,
                                 color: blackColor,
@@ -273,14 +277,15 @@ class _SignUpState extends State<SignUp> {
                                     child: Text.rich(
                                       TextSpan(
                                         text:
-                                            '${'By creating an account, you agree to our '.translate(context)}\n',
+                                            '${'By creating an account, you agree to our '.translate(context).toUpperCase()}\n',
                                         style: regular3(context).copyWith(
                                           fontSize: 14,
                                         ),
                                         children: [
                                           TextSpan(
                                             text: 'Terms and Condition'
-                                                .translate(context),
+                                                .translate(context)
+                                                .toUpperCase(),
                                             style: heading3Grey1(context)
                                                 .copyWith(
                                               fontWeight: FontWeight.w200,
@@ -333,7 +338,7 @@ class _SignUpState extends State<SignUp> {
                                     );
                               },
                               textColor: blackColor,
-                              text: 'Sign up',
+                              text: 'Sign up'.translate(context).toUpperCase(),
                               backgroundColor: themeColor,
                             ),
                             const SizedBox(height: 50),
@@ -342,7 +347,8 @@ class _SignUpState extends State<SignUp> {
                               children: [
                                 Text(
                                   'Already have an account?'
-                                      .translate(context),
+                                      .translate(context)
+                                      .toUpperCase(),
                                   style: regular3(context).copyWith(
                                     color: notifires.getGrey2whiteColor,
                                   ),
@@ -358,7 +364,7 @@ class _SignUpState extends State<SignUp> {
                                     );
                                   },
                                   child: Text(
-                                    'Sign in'.translate(context),
+                                    'Sign in'.translate(context).toUpperCase(),
                                     style: heading1(context).copyWith(
                                       color: blackColor,
                                       fontSize: 16,

@@ -114,10 +114,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 150),
                             commonlyUserLogo(),
                             const SizedBox(height: 10),
-                            Text('Sign in'.translate(context),
+                            Text('Sign in'.translate(context).toUpperCase(),
                                 style: heading1(context)),
                             Text(
-                              'Welcome Back'.translate(context),
+                              'Welcome Back'.translate(context).toUpperCase(),
                               style: regular2(context).copyWith(
                                 color: notifires.getGrey3whiteColor,
                               ),
@@ -147,7 +147,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                           countryCode: country.code,
                                         );
                                   },
-                                  hintText: 'Phone no'.translate(context),
+                                  hintText: 'Phone no'
+                                      .translate(context)
+                                      .toUpperCase(),
                                   onChanged: (_) => null,
                                   validator: (phoneNumber) {
                                     if (phoneNumber == null ||
@@ -199,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     );
                               },
                               textColor: blackColor,
-                              text: 'Sign in',
+                              text: 'Sign in'.translate(context).toUpperCase(),
                               backgroundColor: themeColor,
                             ),
                             const SizedBox(height: 50),
@@ -207,7 +209,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  "Don't have an account?".translate(context),
+                                  "Don't have an account?"
+                                      .translate(context)
+                                      .toUpperCase(),
                                   style: regular3(context).copyWith(
                                     color: notifires.getGrey2whiteColor,
                                   ),
@@ -223,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     );
                                   },
                                   child: Text(
-                                    'Sign Up'.translate(context),
+                                    'Sign Up'.translate(context).toUpperCase(),
                                     style: heading3Grey1(context).copyWith(
                                       color: blackColor,
                                       fontSize: 16,

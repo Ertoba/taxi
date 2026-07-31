@@ -15,7 +15,7 @@
 
 	<!-- ✅ App display name on home screen -->
 	<key>CFBundleDisplayName</key>
-	<string>Mili Taxi</string>
+	<string>MILI TAXI</string>
 
 	<!-- ✅ Executable file -->
 	<key>CFBundleExecutable</key>
@@ -31,7 +31,7 @@
 
 	<!-- ✅ App name -->
 	<key>CFBundleName</key>
-	<string>Mili Taxi</string>
+	<string>MILI TAXI</string>
 
 	<!-- ✅ App type (always APPL for iOS apps) -->
 	<key>CFBundlePackageType</key>

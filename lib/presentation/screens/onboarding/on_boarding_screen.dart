@@ -87,14 +87,17 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
                   child: Column(
                     children: [
                       Text(
-                        'Reliable Rides. Seamless Journeys.'.translate(context),
+                        'Reliable Rides. Seamless Journeys.'
+                            .translate(context)
+                            .toUpperCase(),
                         textAlign: TextAlign.center,
                         style: largeHeadingMedium.copyWith(fontSize: 28),
                       ),
                       const SizedBox(height: 15),
                       Text(
                         'Book instantly, track live, and relax with verified drivers. Multiple ride types, one stress-free experience.'
-                            .translate(context),
+                            .translate(context)
+                            .toUpperCase(),
                         textAlign: TextAlign.center,
                         style: smallHeadingMedium.copyWith(
                           color: notifires.getGrey2whiteColor,
@@ -109,7 +112,9 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 60),
                   child: CustomsButtons(
                     textColor: blackColor,
-                    text: 'Proceed to Sign-Up'.translate(context),
+                    text: 'Proceed to Sign-Up'
+                        .translate(context)
+                        .toUpperCase(),
                     backgroundColor: themeColor,
                     onPressed: () {
                       Navigator.pushReplacement(
