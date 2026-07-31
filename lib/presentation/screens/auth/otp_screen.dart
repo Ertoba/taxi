@@ -330,7 +330,7 @@ class _OtpScreenState extends State<OtpScreen> {
                               CustomsButtons(
                                 textColor: blackColor,
                                 onPressed: _verifyOtp,
-                                text: 'Continue',
+                                text: 'Continue'.translate(context),
                                 backgroundColor: themeColor,
                               ),
                               const SizedBox(height: 30),

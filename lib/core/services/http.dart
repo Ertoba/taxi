@@ -34,7 +34,7 @@ Future<dynamic> httpPost(path, data, {required BuildContext context}) async {
     data['longitude'] = longitudeGlobal;
 
     data['token'] = token;
-    data['lang'] = (lanBox.get('lCode') ?? 'en').toString();
+    data['lang'] = (lanBox.get('lCode') ?? 'ka').toString();
 
     var response = await http.post(
       Uri.parse(url),
@@ -78,6 +78,68 @@ Future<dynamic> httpPost(path, data, {required BuildContext context}) async {
   }
 }
 
+Future<dynamic> httpMultipartPost(
+  String path,
+  Map<String, dynamic> data, {
+  required String filePath,
+  required BuildContext context,
+}) async {
+  try {
+    if (bearerToken.isEmpty) {
+      bearerToken = await generateToken() ?? "";
+    }
+
+    final fields = <String, String>{
+      ...data.map((key, value) => MapEntry(key, value.toString())),
+      'module_id': '2',
+      'user_type': 'user',
+      'latitude': latitudeGlobal,
+      'longitude': longitudeGlobal,
+      'token': token,
+      'lang': (lanBox.get('lCode') ?? 'ka').toString(),
+    };
+
+    Future<http.Response> send(String authToken) async {
+      final request =
+          http.MultipartRequest('POST', Uri.parse('${Config.baseUrl}$path'))
+            ..headers['Authorization'] = 'Bearer $authToken'
+            ..fields.addAll(fields)
+            ..files.add(
+              await http.MultipartFile.fromPath('attachment', filePath),
+            );
+      final streamed = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
+      return http.Response.fromStream(streamed);
+    }
+
+    var response = await send(bearerToken);
+    if (response.statusCode == 498) {
+      final newToken = await generateToken();
+      if (newToken == null) {
+        return {'error': 'Token regeneration failed'};
+      }
+      bearerToken = newToken;
+      response = await send(newToken);
+    }
+
+    if (response.statusCode == 419) {
+      showErrorToastMessage("Session expired. Please log in again.");
+      Future.delayed(const Duration(seconds: 1), () {
+        clearData(navigatorKey.currentContext!);
+        goToWithClear(const LoginScreen());
+      });
+    }
+
+    final decoded = json.decode(const Utf8Codec().decode(response.bodyBytes));
+    return decoded;
+  } on TimeoutException {
+    return {'error': 'Request timed out. Please try again.'};
+  } catch (_) {
+    return {'error': 'Something went wrong'};
+  }
+}
+
 Future<dynamic> httpGet(
   String path,
   Map<String, dynamic> data, {
@@ -102,7 +164,7 @@ Future<dynamic> httpGet(
     data['longitude'] = longitudeGlobal;
 
     data['time_zone'] = "";
-    data['lang'] = (lanBox.get('lCode') ?? 'en').toString();
+    data['lang'] = (lanBox.get('lCode') ?? 'ka').toString();
     String queryString = Uri(
       queryParameters: data.map(
         (key, value) => MapEntry(key, value.toString()),

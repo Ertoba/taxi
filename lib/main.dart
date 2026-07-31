@@ -21,6 +21,11 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('appBox');
   await Hive.openBox('lanBox');
+  final languageBox = Hive.box('lanBox');
+  if (!languageBox.containsKey('lCode')) {
+    await languageBox.put('lCode', 'ka');
+    await languageBox.put('lanValue', 2);
+  }
   await initializeNotifications();
   await setupOneSignal();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -40,7 +45,7 @@ void main() async {
           return BlocBuilder<LanguageCubit, LanguageState>(
             builder: (context, state) {
               if (state is LanguageLoader) {
-                appLocale = Locale(state.language ?? "en");
+                appLocale = Locale(state.language ?? "ka");
               }
               return MaterialApp(
                 navigatorKey: navigatorKey,

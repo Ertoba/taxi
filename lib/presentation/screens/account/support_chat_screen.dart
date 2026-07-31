@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ride_on/core/services/config.dart';
 import 'package:ride_on/core/services/http.dart';
 import 'package:ride_on/core/utils/common_widget.dart';
@@ -23,6 +25,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   bool _loadInFlight = false;
   bool _sending = false;
   String? _error;
+  XFile? _attachment;
 
   @override
   void initState() {
@@ -76,21 +79,58 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
 
   Future<void> _send() async {
     final message = _controller.text.trim();
-    if (message.isEmpty || _sending) return;
+    if ((message.isEmpty && _attachment == null) || _sending) return;
     setState(() => _sending = true);
-    final response = await httpPost(Config.supportChatMessages, {
-      'message': message,
-    }, context: context);
+    late final dynamic response;
+    if (_attachment == null) {
+      response = await httpPost(Config.supportChatMessages, {
+        'message': message,
+      }, context: context);
+    } else {
+      response = await httpMultipartPost(
+        Config.supportChatMessages,
+        {'message': message},
+        filePath: _attachment!.path,
+        context: context,
+      );
+    }
     if (!mounted) return;
     setState(() => _sending = false);
     if (response['status'] == 200) {
       _controller.clear();
+      setState(() => _attachment = null);
       await _load(silent: true);
     } else {
       showErrorToastMessage(
         (response['error'] ?? response['message'] ?? 'Message was not sent')
             .toString(),
       );
+    }
+  }
+
+  Future<void> _pickAttachment() async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 2048,
+        maxHeight: 2048,
+        imageQuality: 82,
+        requestFullMetadata: false,
+      );
+      if (picked == null || !mounted) return;
+      final fileSize = await File(picked.path).length();
+      if (!mounted) return;
+      if (fileSize > 5 * 1024 * 1024) {
+        showErrorToastMessage(
+          'Photo is too large. Maximum size is 5 MB.'.translate(context),
+        );
+        return;
+      }
+      setState(() => _attachment = picked);
+    } catch (_) {
+      if (mounted) {
+        showErrorToastMessage('Photo could not be loaded'.translate(context));
+      }
     }
   }
 
@@ -168,14 +208,45 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  item['message']?.toString() ?? '',
-                                  style: TextStyle(
-                                    color: support
-                                        ? Colors.black87
-                                        : Colors.black,
+                                if ((item['attachment_url']?.toString() ?? '')
+                                    .isNotEmpty)
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.network(
+                                      item['attachment_url'].toString(),
+                                      width: 260,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) => Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Text(
+                                          'Photo could not be loaded'.translate(
+                                            context,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                if ((item['message']?.toString() ?? '')
+                                    .trim()
+                                    .isNotEmpty)
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      top:
+                                          (item['attachment_url']?.toString() ??
+                                                  '')
+                                              .isNotEmpty
+                                          ? 8
+                                          : 0,
+                                    ),
+                                    child: Text(
+                                      item['message'].toString(),
+                                      style: TextStyle(
+                                        color: support
+                                            ? Colors.black87
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                  ),
                                 if (support &&
                                     item['source']?.toString() == 'ai')
                                   const Padding(
@@ -195,10 +266,46 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                       },
                     ),
             ),
+            if (_attachment != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.file(
+                        File(_attachment!.path),
+                        width: 54,
+                        height: 54,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _attachment!.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: _sending
+                          ? null
+                          : () => setState(() => _attachment = null),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
               child: Row(
                 children: [
+                  IconButton(
+                    tooltip: 'Add photo'.translate(context),
+                    onPressed: _sending ? null : _pickAttachment,
+                    icon: const Icon(Icons.add_photo_alternate_outlined),
+                  ),
                   Expanded(
                     child: TextField(
                       controller: _controller,

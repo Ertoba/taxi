@@ -24,10 +24,7 @@ import '../../presentation/cubits/profile/delete_account_cubit.dart';
 import '../../presentation/screens/Auth/login_screen.dart';
 
 Widget commonlyUserLogo() {
-  return Image.asset(
-    'assets/images/appIcon.png',
-    height: 100,
-  );
+  return Image.asset('assets/images/appIcon.png', height: 100);
 }
 
 class CustomsButtons extends StatelessWidget {
@@ -37,45 +34,54 @@ class CustomsButtons extends StatelessWidget {
   final IconData? icon;
   final VoidCallback onPressed;
 
-  const CustomsButtons(
-      {super.key,
-      required this.text,
-      required this.backgroundColor,
-      required this.onPressed,
-      this.icon,
-      this.textColor});
+  const CustomsButtons({
+    super.key,
+    required this.text,
+    required this.backgroundColor,
+    required this.onPressed,
+    this.icon,
+    this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints:
-          const BoxConstraints.expand(width: double.infinity, height: 50.0),
+      constraints: const BoxConstraints.expand(
+        width: double.infinity,
+        height: 50.0,
+      ),
       child: ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-              padding:
-                  const EdgeInsets.only(left: 5, right: 5, top: 10, bottom: 10),
-              backgroundColor: backgroundColor,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8))),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                text.translate(context),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: largeHeadingMedium.copyWith(
-                    color: textColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.normal),
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.only(
+            left: 5,
+            right: 5,
+            top: 10,
+            bottom: 10,
+          ),
+          backgroundColor: backgroundColor,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              text.translate(context),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: largeHeadingMedium.copyWith(
+                color: textColor,
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
               ),
-              if (icon != null) const SizedBox(width: 10),
-              if (icon != null) Icon(icon, color: bgcolor),
-            ],
-          )),
+            ),
+            if (icon != null) const SizedBox(width: 10),
+            if (icon != null) Icon(icon, color: bgcolor),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -90,16 +96,17 @@ class CustomAppBars extends StatelessWidget implements PreferredSizeWidget {
   final double elevation;
   final bool? centerTitle;
 
-  const CustomAppBars(
-      {super.key,
-      required this.title,
-      required this.backgroundColor,
-      this.iconColor,
-      required this.titleColor,
-      this.onBackButtonPressed,
-      this.actions,
-      this.elevation = 0.0,
-      this.centerTitle});
+  const CustomAppBars({
+    super.key,
+    required this.title,
+    required this.backgroundColor,
+    this.iconColor,
+    required this.titleColor,
+    this.onBackButtonPressed,
+    this.actions,
+    this.elevation = 0.0,
+    this.centerTitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -111,13 +118,18 @@ class CustomAppBars extends StatelessWidget implements PreferredSizeWidget {
       elevation: elevation,
       leadingWidth: 85,
       leading: GestureDetector(
-        onTap: onBackButtonPressed ??
+        onTap:
+            onBackButtonPressed ??
             () {
               Navigator.pop(context);
             },
         child: Padding(
-          padding:
-              const EdgeInsets.only(left: 20, top: 8, bottom: 8, right: 20),
+          padding: const EdgeInsets.only(
+            left: 20,
+            top: 8,
+            bottom: 8,
+            right: 20,
+          ),
           child: PhysicalModel(
             color: Colors.transparent,
             shadowColor: Colors.transparent,
@@ -128,16 +140,21 @@ class CustomAppBars extends StatelessWidget implements PreferredSizeWidget {
               height: 40,
               width: 40,
               decoration: BoxDecoration(
-                  color: notifires.getblackwhiteColor,
-                  borderRadius: BorderRadius.circular(30)),
-              child: Icon(Icons.arrow_back_ios_new,
-                  color: notifires.getGrey3whiteColor),
+                color: notifires.getblackwhiteColor,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Icon(
+                Icons.arrow_back_ios_new,
+                color: notifires.getGrey3whiteColor,
+              ),
             ),
           ),
         ),
       ),
-      title: Text(title,
-          style: heading2Grey1(context).copyWith(color: titleColor)),
+      title: Text(
+        title,
+        style: heading2Grey1(context).copyWith(color: titleColor),
+      ),
       actions: actions,
     );
   }
@@ -155,15 +172,13 @@ showLoading() {
 showErrorToastMessage(String message) {
   BotToast.showCustomText(
     duration: const Duration(seconds: 3),
-    align: Alignment.bottomCenter
-        .add(const Alignment(0, -0.12)), // Moves up slightly
+    align: Alignment.bottomCenter.add(
+      const Alignment(0, -0.12),
+    ), // Moves up slightly
     toastBuilder: (context) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 15), // Adds bottom padding
-        child: CustomToastMessages(
-          message: message.toString(),
-          error: true,
-        ),
+        child: CustomToastMessages(message: message.toString(), error: true),
       );
     },
   );
@@ -182,7 +197,7 @@ showToastMessage(String message) {
     ),
     duration: const Duration(seconds: 3),
 
-// prevents it from showing across routes/screens
+    // prevents it from showing across routes/screens
   );
 }
 
@@ -190,11 +205,7 @@ class CustomToastMessages extends StatefulWidget {
   final String message;
   final bool? error;
 
-  const CustomToastMessages({
-    super.key,
-    required this.message,
-    this.error,
-  });
+  const CustomToastMessages({super.key, required this.message, this.error});
 
   @override
   _CustomToastMessagesState createState() => _CustomToastMessagesState();
@@ -240,10 +251,13 @@ class _CustomToastMessagesState extends State<CustomToastMessages>
             clipBehavior: Clip.none,
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                margin:
-                    const EdgeInsets.only(top: 20), // Space for floating text
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                margin: const EdgeInsets.only(
+                  top: 20,
+                ), // Space for floating text
                 decoration: BoxDecoration(
                   color: whiteColor,
                   borderRadius: BorderRadius.circular(12),
@@ -281,11 +295,7 @@ class _CustomToastMessagesState extends State<CustomToastMessages>
                       child: CircleAvatar(
                         backgroundColor: color,
                         radius: 14,
-                        child: Icon(
-                          Icons.close,
-                          color: whiteColor,
-                          size: 16,
-                        ),
+                        child: Icon(Icons.close, color: whiteColor, size: 16),
                       ),
                     ),
                   ],
@@ -304,10 +314,7 @@ class _CustomToastMessagesState extends State<CustomToastMessages>
                     fontSize: 20,
                     color: color.withOpacity(0.9),
                     shadows: [
-                      Shadow(
-                        color: whiteColor.withOpacity(0.9),
-                        blurRadius: 5,
-                      ),
+                      Shadow(color: whiteColor.withOpacity(0.9), blurRadius: 5),
                     ],
                   ),
                 ),
@@ -320,17 +327,21 @@ class _CustomToastMessagesState extends State<CustomToastMessages>
   }
 }
 
-void showDynamicBottomSheets(BuildContext context,
-    {required String title,
-    required String description,
-    required String firstButtontxt,
-    required String secondButtontxt,
-    required final VoidCallback onpressed,
-    required final VoidCallback onpressed1}) {
+void showDynamicBottomSheets(
+  BuildContext context, {
+  required String title,
+  required String description,
+  required String firstButtontxt,
+  required String secondButtontxt,
+  required final VoidCallback onpressed,
+  required final VoidCallback onpressed1,
+}) {
   showModalBottomSheet(
     isScrollControlled: false,
-    constraints:
-        const BoxConstraints.expand(width: double.infinity, height: 240),
+    constraints: const BoxConstraints.expand(
+      width: double.infinity,
+      height: 240,
+    ),
     context: context,
     builder: (context) {
       return DynamicBottomSheetContent(
@@ -353,14 +364,15 @@ class DynamicBottomSheetContent extends StatefulWidget {
   final VoidCallback onpressed;
   final VoidCallback onpressed1;
 
-  const DynamicBottomSheetContent(
-      {super.key,
-      required this.title,
-      required this.description,
-      required this.firstButtontxt,
-      required this.secondButtontxt,
-      required this.onpressed,
-      required this.onpressed1});
+  const DynamicBottomSheetContent({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.firstButtontxt,
+    required this.secondButtontxt,
+    required this.onpressed,
+    required this.onpressed1,
+  });
 
   @override
   State<DynamicBottomSheetContent> createState() =>
@@ -376,25 +388,31 @@ class _DynamicBottomSheetContentState extends State<DynamicBottomSheetContent> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-          color: notifires.getblackwhiteColor,
-          borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(0), topRight: Radius.circular(0))),
+        color: notifires.getblackwhiteColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(0),
+          topRight: Radius.circular(0),
+        ),
+      ),
       padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Flexible(
-              child: Text(widget.title.translate(context),
-                  style: heading2Grey1(context).copyWith())),
-          const SizedBox(height: 20),
-          Divider(
-            height: 1,
-            color: notifires.getGrey3whiteColor,
+            child: Text(
+              widget.title.translate(context),
+              style: heading2Grey1(context).copyWith(),
+            ),
           ),
+          const SizedBox(height: 20),
+          Divider(height: 1, color: notifires.getGrey3whiteColor),
           const SizedBox(height: 15),
           Flexible(
-              child: Text(widget.description.translate(context),
-                  style: heading3Grey1(context))),
+            child: Text(
+              widget.description.translate(context),
+              style: heading3Grey1(context),
+            ),
+          ),
           const SizedBox(height: 30),
           Expanded(
             child: SizedBox(
@@ -406,20 +424,24 @@ class _DynamicBottomSheetContentState extends State<DynamicBottomSheetContent> {
                   Flexible(
                     child: ConstrainedBox(
                       constraints: BoxConstraints.expand(
-                          height: 60,
-                          width: MediaQuery.of(context).size.width * 0.38),
+                        height: 60,
+                        width: MediaQuery.of(context).size.width * 0.38,
+                      ),
                       child: ElevatedButton(
                         onPressed: widget.onpressed,
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
                           backgroundColor: notifires.getBoxColor,
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(Dimensions.radiusLarge),
+                            borderRadius: BorderRadius.circular(
+                              Dimensions.radiusLarge,
+                            ),
                           ),
                         ),
-                        child: Text(widget.firstButtontxt.translate(context),
-                            style: heading3(context)),
+                        child: Text(
+                          widget.firstButtontxt.translate(context),
+                          style: heading3(context),
+                        ),
                       ),
                     ),
                   ),
@@ -427,8 +449,9 @@ class _DynamicBottomSheetContentState extends State<DynamicBottomSheetContent> {
                   Flexible(
                     child: ConstrainedBox(
                       constraints: BoxConstraints.expand(
-                          height: 60,
-                          width: MediaQuery.of(context).size.width * 0.38),
+                        height: 60,
+                        width: MediaQuery.of(context).size.width * 0.38,
+                      ),
                       child: ElevatedButton(
                         onPressed: widget.onpressed1,
                         style: ElevatedButton.styleFrom(
@@ -436,20 +459,24 @@ class _DynamicBottomSheetContentState extends State<DynamicBottomSheetContent> {
                           // onPrimary: WhiteColor, // Customize the text color
                           shape: RoundedRectangleBorder(
                             side: BorderSide(width: 1.0, color: themeColor),
-                            borderRadius:
-                                BorderRadius.circular(Dimensions.radiusLarge),
+                            borderRadius: BorderRadius.circular(
+                              Dimensions.radiusLarge,
+                            ),
                           ),
                         ),
-                        child: Text(widget.secondButtontxt.translate(context),
-                            style: heading3(context)
-                                .copyWith(color: Colors.black)),
+                        child: Text(
+                          widget.secondButtontxt.translate(context),
+                          style: heading3(
+                            context,
+                          ).copyWith(color: Colors.black),
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -466,12 +493,17 @@ Future<Uint8List> createCustomMarkerImage(String imageUrl) async {
     final Completer<ui.Image> completer = Completer<ui.Image>();
     final Image image = Image.network(imageUrl, fit: BoxFit.cover);
 
-    image.image.resolve(const ImageConfiguration()).addListener(
-          ImageStreamListener((ImageInfo info, bool _) {
-            completer.complete(info.image);
-          }, onError: (error, stackTrace) {
-            completer.completeError(error);
-          }),
+    image.image
+        .resolve(const ImageConfiguration())
+        .addListener(
+          ImageStreamListener(
+            (ImageInfo info, bool _) {
+              completer.complete(info.image);
+            },
+            onError: (error, stackTrace) {
+              completer.completeError(error);
+            },
+          ),
         );
 
     profileImage = await completer.future;
@@ -495,13 +527,19 @@ Future<Uint8List> createCustomMarkerImage(String imageUrl) async {
 
   // Draw circular white background
   canvas.drawCircle(
-      const Offset(circleRadius, circleRadius), circleRadius, whitePaint);
+    const Offset(circleRadius, circleRadius),
+    circleRadius,
+    whitePaint,
+  );
 
   // Clip only image part
   final Path imageClipPath = Path()
-    ..addOval(Rect.fromCircle(
+    ..addOval(
+      Rect.fromCircle(
         center: const Offset(circleRadius, circleRadius),
-        radius: circleRadius - 6));
+        radius: circleRadius - 6,
+      ),
+    );
   canvas.save();
   canvas.clipPath(imageClipPath);
 
@@ -525,12 +563,14 @@ Future<Uint8List> createCustomMarkerImage(String imageUrl) async {
   canvas.drawPath(pinPath, pinPaint);
 
   // Final marker image
-  final ui.Image finalImage = await recorder
-      .endRecording()
-      .toImage(circleSize.toInt(), totalHeight.toInt());
+  final ui.Image finalImage = await recorder.endRecording().toImage(
+    circleSize.toInt(),
+    totalHeight.toInt(),
+  );
 
-  final ByteData? byteData =
-      await finalImage.toByteData(format: ui.ImageByteFormat.png);
+  final ByteData? byteData = await finalImage.toByteData(
+    format: ui.ImageByteFormat.png,
+  );
   return byteData!.buffer.asUint8List();
 }
 
@@ -539,7 +579,7 @@ logout(BuildContext context) async {
   await boxs.clear();
 
   box.delete('HomeData');
-  appLocale = const Locale('en');
+  appLocale = Locale((lanBox.get('lCode') ?? 'ka').toString());
   context.read<LanguageCubit>().loadCurrentLanguage();
   bool defaultDarkMode = false;
 
@@ -555,14 +595,15 @@ logout(BuildContext context) async {
 
 buildShowDialog(BuildContext context) {
   return showDialog(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: blackColor.withOpacity(0.1),
-      builder: (BuildContext context) {
-        return Center(
-            child:
-                CircularProgressIndicator(color: yelloColor2, strokeWidth: 3));
-      });
+    context: context,
+    barrierDismissible: false,
+    barrierColor: blackColor.withOpacity(0.1),
+    builder: (BuildContext context) {
+      return Center(
+        child: CircularProgressIndicator(color: yelloColor2, strokeWidth: 3),
+      );
+    },
+  );
 }
 
 class Widgets {
@@ -574,28 +615,28 @@ class Widgets {
     }
     isLoadingShowing = true;
     showDialog(
-        context: context,
-        barrierDismissible: false,
-        useSafeArea: true,
-        builder: (BuildContext context) {
-          return AnnotatedRegion(
-            value: SystemUiOverlayStyle(
-              statusBarColor: Colors.black.withOpacity(0.2),
-            ),
-            child: SafeArea(
-              child: PopScope(
-                canPop: false,
-                onPopInvokedWithResult: (didPop, result) {
-                  return;
-                },
-                child: Center(
-                    child: CircularProgressIndicator(
-                  color: yelloColor2,
-                )),
+      context: context,
+      barrierDismissible: false,
+      useSafeArea: true,
+      builder: (BuildContext context) {
+        return AnnotatedRegion(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.black.withOpacity(0.2),
+          ),
+          child: SafeArea(
+            child: PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) {
+                return;
+              },
+              child: Center(
+                child: CircularProgressIndicator(color: yelloColor2),
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   static void hideLoder(BuildContext context) {
@@ -615,39 +656,46 @@ class SearchWidgets {
     }
     isLoadingShowing = true;
     showDialog(
-        context: context,
-        barrierDismissible: false,
-        useSafeArea: true,
-        builder: (BuildContext context) {
-          return AnnotatedRegion(
-            value: SystemUiOverlayStyle(
-              statusBarColor: Colors.black.withOpacity(0.2),
-            ),
-            child: SafeArea(
-              child: PopScope(
-                canPop: false,
-                onPopInvokedWithResult: (didPop, result) {
-                  return;
-                },
-                child: Center(
-                    child: Padding(
+      context: context,
+      barrierDismissible: false,
+      useSafeArea: true,
+      builder: (BuildContext context) {
+        return AnnotatedRegion(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.black.withOpacity(0.2),
+          ),
+          child: SafeArea(
+            child: PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) {
+                return;
+              },
+              child: Center(
+                child: Padding(
                   padding: const EdgeInsets.only(bottom: 100),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Image.asset("assets/images/search_loading.gif",
-                          height: 70),
-                      Text("Request sent to nearby drivers",
-                          style:
-                              headingBlack(context).copyWith(color: whiteColor))
+                      Image.asset(
+                        "assets/images/search_loading.gif",
+                        height: 70,
+                      ),
+                      Text(
+                        "Request sent to nearby drivers",
+                        style: headingBlack(
+                          context,
+                        ).copyWith(color: whiteColor),
+                      ),
                     ],
                   ),
-                )),
+                ),
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   static void hideLoder(BuildContext context) {
@@ -703,9 +751,12 @@ class CustomAppBarNew extends StatelessWidget implements PreferredSizeWidget {
       surfaceTintColor: backgroundColor ?? Colors.white,
       backgroundColor: backgroundColor ?? Colors.white,
       centerTitle: isCenterTitle ?? true,
-      title: Text(title.translate(context),
-          style: headingBlack(context).copyWith(
-              fontSize: fontSize ?? 22, color: titleColor ?? blackColor)),
+      title: Text(
+        title.translate(context),
+        style: headingBlack(
+          context,
+        ).copyWith(fontSize: fontSize ?? 22, color: titleColor ?? blackColor),
+      ),
       leading: isBackButton == true
           ? const SizedBox()
           : Padding(
@@ -715,14 +766,18 @@ class CustomAppBarNew extends StatelessWidget implements PreferredSizeWidget {
                 child: InkWell(
                   onTap: onBackTap ?? () => Navigator.of(context).pop(),
                   child: Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: backgroundColor ?? notifires.getbgcolor,
-                          border:
-                              Border.all(color: notifires.getGrey3whiteColor)),
-                      child: Icon(Icons.arrow_back,
-                          size: 20, color: notifires.getwhiteblackColor)),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: backgroundColor ?? notifires.getbgcolor,
+                      border: Border.all(color: notifires.getGrey3whiteColor),
+                    ),
+                    child: Icon(
+                      Icons.arrow_back,
+                      size: 20,
+                      color: notifires.getwhiteblackColor,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -743,7 +798,9 @@ Widget zoomButton({IconData? icon, VoidCallback? onPressed}) {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(8)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Icon(icon),
       ),
     ),
@@ -755,10 +812,7 @@ void goTo(Widget screen) {
     PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => screen,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
+        return FadeTransition(opacity: animation, child: child);
       },
     ),
   );
@@ -773,17 +827,14 @@ dialogExit(BuildContext context, {VoidCallback? onExit}) {
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
-              Icon(
-                Icons.error,
-                size: 75,
-                color: redColor,
-              ),
+              Icon(Icons.error, size: 75, color: redColor),
               Text(
                 'Do you want to exit?'.translate(context),
                 textAlign: TextAlign.center,
-                style: headingBlack(context)
-                    .copyWith(color: notifires.getwhiteblackColor),
-              )
+                style: headingBlack(
+                  context,
+                ).copyWith(color: notifires.getwhiteblackColor),
+              ),
             ],
           ),
         ),
@@ -793,55 +844,65 @@ dialogExit(BuildContext context, {VoidCallback? onExit}) {
               Row(
                 children: [
                   Expanded(
-                      child: InkWell(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: Container(
-                              margin: const EdgeInsets.only(left: 8, right: 8),
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: grey5),
-                                  color: grey4,
-                                  borderRadius: BorderRadius.circular(10)),
-                              child: Center(
-                                  child: Text(
-                                "Cancel".translate(context),
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              ))))),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 8, right: 8),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: grey5),
+                          color: grey4,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Cancel".translate(context),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   Expanded(
-                      child: InkWell(
-                          onTap: () {
-                            Navigator.pop(context);
-                            if (onExit != null) {
-                              onExit();
-                            } else {
-                              SystemNavigator.pop();
-                            }
-                          },
-                          child: Container(
-                              margin: const EdgeInsets.only(left: 8, right: 8),
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: blackColor),
-                                  color: blackColor,
-                                  borderRadius: BorderRadius.circular(10)),
-                              child: Center(
-                                  child: Text(
-                                "Exit".translate(context),
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              ))))),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (onExit != null) {
+                          onExit();
+                        } else {
+                          SystemNavigator.pop();
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 8, right: 8),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: blackColor),
+                          color: blackColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Exit".translate(context),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(
-                height: 8,
-              )
+              const SizedBox(height: 8),
             ],
-          )
+          ),
         ],
       );
     },
@@ -855,13 +916,14 @@ class PaymentConfirmationDialogs extends StatefulWidget {
   final String? text;
   final Function()? onPressed;
 
-  const PaymentConfirmationDialogs(
-      {super.key,
-      this.desc,
-      this.firstButtontext,
-      this.secondButtontext,
-      this.text,
-      this.onPressed});
+  const PaymentConfirmationDialogs({
+    super.key,
+    this.desc,
+    this.firstButtontext,
+    this.secondButtontext,
+    this.text,
+    this.onPressed,
+  });
 
   @override
   _PaymentConfirmationDialogsState createState() =>
@@ -876,9 +938,7 @@ class _PaymentConfirmationDialogsState
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       elevation: 0,
       backgroundColor: Colors.transparent,
       child: Container(
@@ -891,15 +951,21 @@ class _PaymentConfirmationDialogsState
         child: Column(
           children: [
             const SizedBox(height: 10),
-            Icon(Icons.payment_rounded,
-                size: 70, color: blackColor), // Customize the icon
+            Icon(
+              Icons.payment_rounded,
+              size: 70,
+              color: blackColor,
+            ), // Customize the icon
             const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text('${widget.text}'.translate(context),
-                  textAlign: TextAlign.center,
-                  style: regular(context).copyWith(
-                      fontSize: 16, color: notifires.getwhiteblackColor)),
+              child: Text(
+                '${widget.text}'.translate(context),
+                textAlign: TextAlign.center,
+                style: regular(
+                  context,
+                ).copyWith(fontSize: 16, color: notifires.getwhiteblackColor),
+              ),
             ), // Customize the text style
             Expanded(
               child: Container(
@@ -928,8 +994,10 @@ class _PaymentConfirmationDialogsState
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: Text('Cancel'.translate(context),
-                              style: heading3Grey1(context)),
+                          child: Text(
+                            'Cancel'.translate(context),
+                            style: heading3Grey1(context),
+                          ),
                         ),
                       ),
                     ),
@@ -942,11 +1010,15 @@ class _PaymentConfirmationDialogsState
                           child: Container(
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                                color: blackColor,
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Text('Confirm'.translate(context),
-                                style: heading3Grey1(context)
-                                    .copyWith(color: whiteColor)),
+                              color: blackColor,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'Confirm'.translate(context),
+                              style: heading3Grey1(
+                                context,
+                              ).copyWith(color: whiteColor),
+                            ),
                           ),
                         ),
                       ),
@@ -1030,8 +1102,11 @@ Future<String> compressAndUploadImage(String imagePath) async {
   return finalBase64;
 }
 
-Widget myNetworkImage(String? image,
-    {double height = 150.0, double width = 150.0}) {
+Widget myNetworkImage(
+  String? image, {
+  double height = 150.0,
+  double width = 150.0,
+}) {
   if (image != null && Uri.tryParse(image)?.hasAbsolutePath == true) {
     // Valid URL, proceed with loading
     return SizedBox(
@@ -1040,17 +1115,21 @@ Widget myNetworkImage(String? image,
       child: Image.network(
         image,
         fit: BoxFit.cover,
-        loadingBuilder: (BuildContext context, Widget child,
-            ImageChunkEvent? loadingProgress) {
-          if (loadingProgress == null) {
-            return child;
-          } else {
-            return const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
-            );
-          }
-        },
+        loadingBuilder:
+            (
+              BuildContext context,
+              Widget child,
+              ImageChunkEvent? loadingProgress,
+            ) {
+              if (loadingProgress == null) {
+                return child;
+              } else {
+                return const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
         errorBuilder: (context, exception, stackTrace) {
           return getErrorImage();
         },
@@ -1064,10 +1143,7 @@ Widget myNetworkImage(String? image,
 Widget getErrorImage() {
   return Padding(
     padding: const EdgeInsets.all(10),
-    child: Image.asset(
-      "assets/images/appIcon.png",
-      fit: BoxFit.contain,
-    ),
+    child: Image.asset("assets/images/appIcon.png", fit: BoxFit.contain),
   );
 }
 
@@ -1076,10 +1152,7 @@ Widget myAssetImage(String? image, {double? height, double? width}) {
     return SizedBox(
       width: width,
       height: height,
-      child: Image.asset(
-        image,
-        fit: BoxFit.contain,
-      ),
+      child: Image.asset(image, fit: BoxFit.contain),
     );
   } else {
     return getErrorImage();
@@ -1125,8 +1198,10 @@ void showCancelRideBottomSheet({
                   child: Container(
                     alignment: Alignment.center,
                     height: 50,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: blackColor,
                       borderRadius: BorderRadius.circular(40),
@@ -1146,18 +1221,19 @@ void showCancelRideBottomSheet({
                   child: Container(
                     alignment: Alignment.center,
                     height: 50,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: notifires.getBoxColor,
                       borderRadius: BorderRadius.circular(40),
                     ),
                     child: Text(
                       "Keep Ride",
-                      style: regular2(context).copyWith(
-                        color: grey1,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: regular2(
+                        context,
+                      ).copyWith(color: grey1, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -1190,10 +1266,7 @@ Widget buildLocationRow({
       ),
       const SizedBox(width: 10),
       Expanded(
-        child: Text(
-          text,
-          style: regular(context).copyWith(color: grey1),
-        ),
+        child: Text(text, style: regular(context).copyWith(color: grey1)),
       ),
     ],
   );
@@ -1230,8 +1303,9 @@ class DeleteConfirmationDialogs extends StatelessWidget {
         }
       },
       child: Dialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 6,
         child: Container(
@@ -1253,8 +1327,9 @@ class DeleteConfirmationDialogs extends StatelessWidget {
               Icon(Icons.warning_amber_rounded, size: 80, color: themeColor),
               const SizedBox(height: 16),
               Text(
-                "Are you sure you want to delete your account?"
-                    .translate(context),
+                "Are you sure you want to delete your account?".translate(
+                  context,
+                ),
                 textAlign: TextAlign.center,
                 style: regular(context).copyWith(
                   fontSize: 18,
@@ -1264,8 +1339,9 @@ class DeleteConfirmationDialogs extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                "This action is permanent and cannot be undone."
-                    .translate(context),
+                "This action is permanent and cannot be undone.".translate(
+                  context,
+                ),
                 textAlign: TextAlign.center,
                 style: regular(context).copyWith(
                   fontSize: 14,
@@ -1284,8 +1360,9 @@ class DeleteConfirmationDialogs extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                           side: BorderSide(
-                            color:
-                                notifires.getGrey2whiteColor.withOpacity(0.4),
+                            color: notifires.getGrey2whiteColor.withOpacity(
+                              0.4,
+                            ),
                           ),
                         ),
                       ),
@@ -1302,9 +1379,9 @@ class DeleteConfirmationDialogs extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        context
-                            .read<DeleteAccountCubit>()
-                            .deleteAccount(context);
+                        context.read<DeleteAccountCubit>().deleteAccount(
+                          context,
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: themeColor,
@@ -1325,7 +1402,7 @@ class DeleteConfirmationDialogs extends StatelessWidget {
                     ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -1584,17 +1661,17 @@ class MapShimmerScreen extends StatelessWidget {
 
 Future<Uint8List> getBytesFromAsset(String path, int width) async {
   ByteData data = await rootBundle.load(path);
-  ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
-      targetWidth: width);
+  ui.Codec codec = await ui.instantiateImageCodec(
+    data.buffer.asUint8List(),
+    targetWidth: width,
+  );
   ui.FrameInfo fi = await codec.getNextFrame();
-  return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
-      .buffer
-      .asUint8List();
+  return (await fi.image.toByteData(
+    format: ui.ImageByteFormat.png,
+  ))!.buffer.asUint8List();
 }
 
-Widget languageButton({
-  required VoidCallback onTap,
-}) {
+Widget languageButton({required VoidCallback onTap}) {
   return InkWell(
     onTap: onTap,
     borderRadius: BorderRadius.circular(8),
@@ -1609,15 +1686,17 @@ Widget languageButton({
         children: [
           Icon(Icons.language, color: themeColor, size: 18),
           const SizedBox(width: 6),
-          BlocBuilder<LCodeCubit, String>(builder: (context, state) {
-            return Text(
-              state.toUpperCase(),
-              style: TextStyle(
-                color: themeColor,
-                fontWeight: FontWeight.w600,
-              ),
-            );
-          }),
+          BlocBuilder<LCodeCubit, String>(
+            builder: (context, state) {
+              return Text(
+                state.toUpperCase(),
+                style: TextStyle(
+                  color: themeColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              );
+            },
+          ),
           Icon(Icons.keyboard_arrow_down_rounded, color: themeColor, size: 18),
         ],
       ),
@@ -1631,7 +1710,8 @@ double calculateDistance(lat1, lon1, lat2, lon2) {
   double dLat = _deg2rad(lat2 - lat1);
   double dLon = _deg2rad(lon2 - lon1);
 
-  double a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+  double a =
+      math.sin(dLat / 2) * math.sin(dLat / 2) +
       math.cos(_deg2rad(lat1)) *
           math.cos(_deg2rad(lat2)) *
           math.sin(dLon / 2) *

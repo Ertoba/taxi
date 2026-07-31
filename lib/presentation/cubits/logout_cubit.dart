@@ -12,6 +12,7 @@ import 'package:ride_on/presentation/cubits/realtime/update_ride_request_paramet
 import 'package:ride_on/presentation/cubits/review/review_cubit.dart';
 import 'package:ride_on/presentation/cubits/vehicle_data/get_vehicle_cetgegory_cubit.dart';
 
+import '../../core/services/data_store.dart';
 import '../../core/utils/theme/project_color.dart';
 import 'auth/google_login_cubit.dart';
 import 'auth/login_cubit.dart';
@@ -55,7 +56,7 @@ class LogoutCubit extends Cubit<LogoutState> {
       await box.clear();
       clearData(context);
 
-      appLocale = const Locale('en');
+      appLocale = Locale((lanBox.get('lCode') ?? 'ka').toString());
       bool defaultDarkMode = false;
       box.put("getDarkValue", defaultDarkMode);
       box.put("driver_status", false);
@@ -75,7 +76,7 @@ class LogoutCubit extends Cubit<LogoutState> {
 Future<void> clearData(BuildContext context) async {
   final box = await Hive.openBox('appBox');
   await box.clear();
-  appLocale = const Locale('en');
+  appLocale = Locale((lanBox.get('lCode') ?? 'ka').toString());
   bool defaultDarkMode = false;
   box.put("getDarkValue", defaultDarkMode);
   box.put("driver_status", false);

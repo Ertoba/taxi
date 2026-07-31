@@ -30,7 +30,6 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
-
   File? image;
   final picker = ImagePicker();
   GlobalKey buttonKey = GlobalKey();
@@ -51,9 +50,10 @@ class _EditProfileState extends State<EditProfile> {
 
     textEditingEditProfileNumberController.text = loginModel?.data?.phone ?? "";
     textEditingEditProfileEmailController.text = loginModel?.data?.email ?? "";
-    context.read<SetCountryCubit>().setCountry(dialCode: loginModel?.data?.phoneCountry??"+91", countryCode: loginModel?.data?.defaultCountry??"IN");
-
-
+    context.read<SetCountryCubit>().setCountry(
+      dialCode: loginModel?.data?.phoneCountry ?? "+995",
+      countryCode: loginModel?.data?.defaultCountry ?? "GE",
+    );
   }
 
   Future<void> pickImage(ImageSource source) async {
@@ -63,10 +63,10 @@ class _EditProfileState extends State<EditProfile> {
       setState(() {
         image = File(pickedFile.path);
       });
-           // ignore_for_file: use_build_context_synchronously
-      context.read<UpdateProfileCubit>().uploadProfileImage(postData: {
-        "profile_image": base64Img,
-      });
+      // ignore_for_file: use_build_context_synchronously
+      context.read<UpdateProfileCubit>().uploadProfileImage(
+        postData: {"profile_image": base64Img},
+      );
     }
   }
 
@@ -83,147 +83,212 @@ class _EditProfileState extends State<EditProfile> {
         },
       ),
       body: BlocBuilder<UpdateProfileCubit, UpdateProfileState>(
-          builder: (context, state) {
-        if (state is UpdateProfileLoading) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Widgets.showLoader(context);
-          });
-        } else if (state is UpdateProfileSuccess) {
-          Widgets.hideLoder(context);
-          loginModel = logmod.LoginModel(
-              data: logmod.Data.fromJson(state.loginModel.data!.toJson()));
-          loginModel = loginModel;
-          UserData userObj = UserData();
-          userObj.saveLoginData("UserData", jsonEncode(loginModel!.toJson()));
-          context.read<UpdateProfileCubit>().clear();
-          context
-              .read<NameCubit>()
-              .updateName("${state.loginModel.data!.firstName}");
+        builder: (context, state) {
+          if (state is UpdateProfileLoading) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Widgets.showLoader(context);
+            });
+          } else if (state is UpdateProfileSuccess) {
+            Widgets.hideLoder(context);
+            loginModel = logmod.LoginModel(
+              data: logmod.Data.fromJson(state.loginModel.data!.toJson()),
+            );
+            loginModel = loginModel;
+            UserData userObj = UserData();
+            userObj.saveLoginData("UserData", jsonEncode(loginModel!.toJson()));
+            context.read<UpdateProfileCubit>().clear();
+            context.read<NameCubit>().updateName(
+              "${state.loginModel.data!.firstName}",
+            );
 
-          showToastMessage(state.loginModel.message ?? "");
-        } else if (state is UpdateProfileImageSuccess) {
-          Widgets.hideLoder(context);
+            showToastMessage(state.loginModel.message ?? "");
+          } else if (state is UpdateProfileImageSuccess) {
+            Widgets.hideLoder(context);
 
-          loginModel!.data!.profileImageSetter = state.imageUrl;
-          myImage = state.imageUrl;
-          context
-              .read<BookRideRealTimeDataBaseCubit>()
-              .updateUserImageUrl(userImageUrl: state.imageUrl);
+            loginModel!.data!.profileImageSetter = state.imageUrl;
+            myImage = state.imageUrl;
+            context.read<BookRideRealTimeDataBaseCubit>().updateUserImageUrl(
+              userImageUrl: state.imageUrl,
+            );
 
-          context
-              .read<UpdateRideRequestParameterCubit>()
-              .updateFirebaseUserParameter(
+            context
+                .read<UpdateRideRequestParameterCubit>()
+                .updateFirebaseUserParameter(
                   rideId: context
                       .read<BookRideRealTimeDataBaseCubit>()
                       .state
                       .rideId,
-                  userParameter: {"userImageUrl": state.imageUrl});
+                  userParameter: {"userImageUrl": state.imageUrl},
+                );
 
-          context.read<MyImageCubit>().updateMyImage(myImage);
-          UserData userObj = UserData();
-          userObj.saveLoginData("UserData", jsonEncode(loginModel!.toJson()));
-        } else if (state is UpdateProfileFailed) {
-          Widgets.hideLoder(context);
+            context.read<MyImageCubit>().updateMyImage(myImage);
+            UserData userObj = UserData();
+            userObj.saveLoginData("UserData", jsonEncode(loginModel!.toJson()));
+          } else if (state is UpdateProfileFailed) {
+            Widgets.hideLoder(context);
 
-          showErrorToastMessage(state.error);
-          context.read<UpdateProfileCubit>().clear();
-        }
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(children: [
-            const SizedBox(height: 30),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Stack(
-                      alignment: Alignment.bottomRight,
+            showErrorToastMessage(state.error);
+            context.read<UpdateProfileCubit>().clear();
+          }
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                const SizedBox(height: 30),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
                       children: [
-                        myImage.isNotEmpty
-                            ? Container(
-                                width: 120,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white,
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 4,
+                        Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            myImage.isNotEmpty
+                                ? Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 4,
+                                      ),
+                                    ),
+                                    child: ClipOval(
+                                      child: myNetworkImage(myImage),
+                                    ),
+                                  )
+                                : Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: grey6,
+                                    ),
+                                    child: Icon(
+                                      CupertinoIcons.profile_circled,
+                                      size: 110,
+                                      color: themeColor,
+                                    ),
                                   ),
-                                ),
-                                child: ClipOval(child: myNetworkImage(myImage)),
-                              )
-                            : Container(
-                                width: 120,
-                                height: 120,
+                            GestureDetector(
+                              key: buttonKey,
+                              onTap: () {
+                                getButtonPosition(buttonKey);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
+                                  color: blackColor,
                                   shape: BoxShape.circle,
-                                  color: grey6,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: .2),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
-                                child: Icon(
-                                  CupertinoIcons.profile_circled,
-                                  size: 110,
-                                  color: themeColor,
+                                child: const Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                  size: 18,
                                 ),
                               ),
-                        GestureDetector(
-                          key: buttonKey,
-                          onTap: () {
-                            getButtonPosition(buttonKey);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: blackColor,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: .2),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 30),
+                        TextFieldAdvance(
+                          icons: Icon(
+                            Icons.person_2_outlined,
+                            color: notifires.getGrey2whiteColor,
+                          ),
+                          txt: "Enter Your Name".translate(context),
+                          textEditingControllerCommon:
+                              textEditingEditProfileNameController,
+                          inputType: TextInputType.name,
+                          inputAlignment: TextAlign.start,
+                        ),
+                        const SizedBox(height: 20),
+                        BlocBuilder<EmailOtpCubit, EmailOtpState>(
+                          builder: (context, state) {
+                            if (state is OtpSuccessForChangeEmailSate) {
+                              textEditingEditProfileEmailController.text =
+                                  state.loginModel.data?.email ?? "";
+                              context.read<EmailCubit>().updateEmail(
+                                state.loginModel.data?.email ?? "",
+                              );
+                            }
+                            return Stack(
+                              children: [
+                                TextFieldAdvance(
+                                  icons: Icon(
+                                    Icons.email_outlined,
+                                    color: notifires.getGrey2whiteColor,
+                                  ),
+                                  txt: "Enter Your Email".translate(context),
+                                  readOnly: true,
+                                  textEditingControllerCommon:
+                                      textEditingEditProfileEmailController,
+                                  inputType: TextInputType.name,
+                                  inputAlignment: TextAlign.start,
+                                ),
+                                Positioned(
+                                  right: 10,
+                                  top: 0,
+                                  bottom: 0,
+                                  left: 10,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          goTo(const EmailUpdateScreen());
+                                        },
+                                        child: Center(
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            child: Container(
+                                              color: themeColor.withValues(
+                                                alpha: .7,
+                                              ),
+                                              height: 30,
+                                              width: 30,
+                                              child: Icon(
+                                                Icons.mode,
+                                                color: blackColor,
+                                                size: 17,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
-                            ),
-                            child: const Icon(
-                              Icons.edit,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ),
+                            );
+                          },
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 30),
-                    TextFieldAdvance(
-                        icons: Icon(Icons.person_2_outlined,
-                            color: notifires.getGrey2whiteColor),
-                        txt: "Enter Your Name".translate(context),
-                        textEditingControllerCommon:
-                            textEditingEditProfileNameController,
-                        inputType: TextInputType.name,
-                        inputAlignment: TextAlign.start),
-                    const SizedBox(height: 20),
-                    BlocBuilder<EmailOtpCubit, EmailOtpState>(
-                        builder: (context, state) {
-                      if (state is OtpSuccessForChangeEmailSate) {
-                        textEditingEditProfileEmailController.text =
-                            state.loginModel.data?.email ?? "";
-                        context
-                            .read<EmailCubit>()
-                            .updateEmail(state.loginModel.data?.email ?? "");
-                      }
-                      return Stack(
-                        children: [
-                          TextFieldAdvance(
-                              icons: Icon(Icons.email_outlined,
-                                  color: notifires.getGrey2whiteColor),
-                              txt: "Enter Your Email".translate(context),
+                        const SizedBox(height: 20),
+                        Stack(
+                          children: [
+                            TextFieldAdvance(
+                              icons: Icon(
+                                Icons.call_outlined,
+                                color: notifires.getGrey2whiteColor,
+                              ),
+                              txt: "Enter Your Mobile".translate(context),
                               readOnly: true,
                               textEditingControllerCommon:
-                                  textEditingEditProfileEmailController,
+                                  textEditingEditProfileNumberController,
                               inputType: TextInputType.name,
-                              inputAlignment: TextAlign.start),
-                          Positioned(
+                              inputAlignment: TextAlign.start,
+                            ),
+                            Positioned(
                               right: 10,
                               top: 0,
                               bottom: 0,
@@ -232,98 +297,76 @@ class _EditProfileState extends State<EditProfile> {
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   InkWell(
-                                      onTap: () {
-                                        goTo(const EmailUpdateScreen());
-                                      },
-                                      child: Center(
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          child: Container(
-                                              color: themeColor.withValues(alpha: .7),
-                                              height: 30,
-                                              width: 30,
-                                              child:   Icon(
-                                                Icons.mode,
-                                                color: blackColor,
-                                                size: 17,
-                                              )),
-                                        ),
-                                      )),
-                                ],
-                              ))
-                        ],
-                      );
-                    }),
-                    const SizedBox(height: 20),
-                    Stack(
-                      children: [
-                        TextFieldAdvance(
-                            icons: Icon(Icons.call_outlined,
-                                color: notifires.getGrey2whiteColor),
-                            txt: "Enter Your Mobile".translate(context),
-                            readOnly: true,
-                            textEditingControllerCommon:
-                                textEditingEditProfileNumberController,
-                            inputType: TextInputType.name,
-                            inputAlignment: TextAlign.start),
-                        Positioned(
-                            right: 10,
-                            top: 0,
-                            bottom: 0,
-                            left: 10,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                InkWell(
                                     onTap: () {
-                                      context.read<SetCountryCubit>().setCountry(dialCode: loginModel?.data?.phoneCountry??"+91", countryCode: loginModel?.data?.defaultCountry??"IN");
+                                      context
+                                          .read<SetCountryCubit>()
+                                          .setCountry(
+                                            dialCode:
+                                                loginModel
+                                                    ?.data
+                                                    ?.phoneCountry ??
+                                                "+995",
+                                            countryCode:
+                                                loginModel
+                                                    ?.data
+                                                    ?.defaultCountry ??
+                                                "GE",
+                                          );
 
-                                      goTo(PhoneUpdateScreen(
+                                      goTo(
+                                        PhoneUpdateScreen(
                                           phone:
                                               textEditingEditProfileNumberController
-                                                  .text));
+                                                  .text,
+                                        ),
+                                      );
                                     },
                                     child: Center(
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(8),
                                         child: Container(
-                                            color: themeColor.withValues(alpha: .7),
-                                            height: 30,
-                                            width: 30,
-                                            child:   Icon(
-                                              Icons.mode,
-                                              color: blackColor,
-                                              size: 17,
-                                            )),
+                                          color: themeColor.withValues(
+                                            alpha: .7,
+                                          ),
+                                          height: 30,
+                                          width: 30,
+                                          child: Icon(
+                                            Icons.mode,
+                                            color: blackColor,
+                                            size: 17,
+                                          ),
+                                        ),
                                       ),
-                                    )),
-                              ],
-                            ))
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                  ],
+                  ),
                 ),
-              ),
+                CustomsButtons(
+                  textColor: blackColor,
+                  text: "Update Profile".translate(context),
+                  backgroundColor: themeColor,
+                  onPressed: () {
+                    context.read<UpdateProfileCubit>().updateProfileMethod(
+                      postData: {
+                        "first_name": textEditingEditProfileNameController.text,
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 50),
+              ],
             ),
-            CustomsButtons(
-                textColor: blackColor,
-                text: "Update Profile".translate(context),
-                backgroundColor: themeColor,
-                onPressed: () {
-                  context
-                      .read<UpdateProfileCubit>()
-                      .updateProfileMethod(postData: {
-                    "first_name": textEditingEditProfileNameController.text,
-                  });
-                }),
-            const SizedBox(
-              height: 50,
-            )
-          ]),
-        );
-      }),
+          );
+        },
+      ),
     );
   }
 
@@ -331,7 +374,11 @@ class _EditProfileState extends State<EditProfile> {
     showMenu(
       context: context,
       position: RelativeRect.fromLTRB(
-          offset.dx, offset.dy, offset.dx + 10, offset.dy + 10),
+        offset.dx,
+        offset.dy,
+        offset.dx + 10,
+        offset.dy + 10,
+      ),
       items: [
         PopupMenuItem(
           child: Row(
@@ -360,9 +407,7 @@ class _EditProfileState extends State<EditProfile> {
       ],
       elevation: 10,
       color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
     );
   }
 

@@ -54,7 +54,12 @@ class _SplashScreenState extends State<SplashScreen>
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     commonlyUserLogo(),
-                    Text("RideOn Taxi",style: heading1(context).copyWith(color: Colors.black,fontSize: 25),)
+                    Text(
+                      "Mili Taxi",
+                      style: heading1(
+                        context,
+                      ).copyWith(color: Colors.black, fontSize: 25),
+                    ),
                   ],
                 ),
               ),
@@ -70,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
           top: 0,
           right: 0,
           child: SvgPicture.asset("assets/images/vector_top.svg"),
-        )
+        ),
       ],
     );
     // );

@@ -32,8 +32,9 @@ class LanguageCubit extends Cubit<LanguageState> {
     return lanBox.get("lCode");
   }
 }
+
 class LCodeCubit extends Cubit<String> {
-  LCodeCubit() : super(lanBox.get("lCode")??'en'); // default language code
+  LCodeCubit() : super(lanBox.get("lCode") ?? 'ka'); // default language code
 
   void changeLanguage(String code) => emit(code);
 }

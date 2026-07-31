@@ -87,8 +87,7 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
                   child: Column(
                     children: [
                       Text(
-                        'Reliable Rides. Seamless Journeys.'
-                            .translate(context),
+                        'Reliable Rides. Seamless Journeys.'.translate(context),
                         textAlign: TextAlign.center,
                         style: largeHeadingMedium.copyWith(fontSize: 28),
                       ),
@@ -110,14 +109,12 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 60),
                   child: CustomsButtons(
                     textColor: blackColor,
-                    text: 'Proceed to Sign-Up',
+                    text: 'Proceed to Sign-Up'.translate(context),
                     backgroundColor: themeColor,
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const SignUp(),
-                        ),
+                        MaterialPageRoute(builder: (context) => const SignUp()),
                       );
                     },
                   ),
@@ -147,11 +144,7 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
   }
 }
 
-Widget customOnboardingWidget(
-  String image,
-  String title,
-  String description,
-) {
+Widget customOnboardingWidget(String image, String title, String description) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20),
     child: Column(

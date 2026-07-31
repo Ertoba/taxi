@@ -15,7 +15,7 @@
 
 	<!-- ✅ App display name on home screen -->
 	<key>CFBundleDisplayName</key>
-	<string>RideOn-Taxi</string>
+	<string>Mili Taxi</string>
 
 	<!-- ✅ Executable file -->
 	<key>CFBundleExecutable</key>
@@ -31,7 +31,7 @@
 
 	<!-- ✅ App name -->
 	<key>CFBundleName</key>
-	<string>RideOn-Taxi</string>
+	<string>Mili Taxi</string>
 
 	<!-- ✅ App type (always APPL for iOS apps) -->
 	<key>CFBundlePackageType</key>
@@ -63,16 +63,16 @@
 
 	<!-- ✅ Permissions (iOS Privacy settings) -->
 	<key>NSCameraUsageDescription</key>
-	<string>RideOn-Taxi needs access to your camera to capture and upload pictures of your ID for booking verification or to take photos of items and update your profile.</string>
+	<string>Mili Taxi-ს კამერაზე წვდომა სჭირდება ფოტოების გადასაღებად და ჩატში ან პროფილში ასატვირთად.</string>
 
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>RideOn-Taxi uses your location to find nearby items and deals when you're actively using the app. Additionally, we may update available properties and offers in your vicinity even when the app is running in the background to provide you with the best deals.</string>
+	<string>Mili Taxi თქვენს მდებარეობას იყენებს ახლომდებარე მძღოლების მოსაძებნად და მგზავრობის მიმდინარეობის საჩვენებლად, მათ შორის ფონურ რეჟიმში.</string>
 
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>RideOn-Taxi needs access to your location to provide relevant property options and deals while you're using the app.</string>
+	<string>Mili Taxi-ს მდებარეობაზე წვდომა სჭირდება აყვანის ადგილისა და ახლომდებარე მძღოლების განსაზღვრისთვის.</string>
 
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>RideOn-Taxi requires access to your photo library to upload pictures of your ID or other documents for booking verification, or to add profile and property images.</string>
+	<string>Mili Taxi-ს ფოტოებზე წვდომა სჭირდება პროფილისა და მხარდაჭერის ჩატის სურათების ასატვირთად.</string>
 
 	<!-- ✅ Allows external keyboards / input -->
 	<key>UIApplicationSupportsIndirectInputEvents</key>

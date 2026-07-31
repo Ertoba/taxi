@@ -21,7 +21,7 @@ class _ChangeLanguageState extends State<ChangeLanguage> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = lanBox.get("lanValue") ?? 0;
+    _selectedIndex = lanBox.get("lanValue") ?? 2;
   }
 
   @override

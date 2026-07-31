@@ -18,7 +18,7 @@ class SelectLanguageScreen extends StatefulWidget {
 
 class _SelectLanguageScreenState extends State<SelectLanguageScreen>
     with SingleTickerProviderStateMixin {
-  int _selectedValue = lanBox.get("lanValue") ?? -1;
+  int _selectedValue = lanBox.get("lanValue") ?? 2;
 
   final List<Map<String, dynamic>> localeList = [
     {"name": "English", "locale": "en", "flag": "🇬🇧"},
@@ -158,7 +158,7 @@ class _SelectLanguageScreenState extends State<SelectLanguageScreen>
                 SizedBox(
                   height: 55,
                   child: CustomsButtons(
-                    text: "Continue",
+                    text: "Continue".translate(context),
                     backgroundColor: themeColor,
                     onPressed: () {
                       if (_selectedValue != -1) {
