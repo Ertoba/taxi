@@ -55,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen>
                   children: [
                     commonlyUserLogo(),
                     Text(
-                      "MILI TAXI",
+                      "მილი ტაქსი",
                       style: heading1(
                         context,
                       ).copyWith(color: Colors.black, fontSize: 25),

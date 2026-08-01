@@ -28,8 +28,11 @@ class SearchMapScreen extends StatefulWidget {
 }
 
 class _SearchMapScreenState extends State<SearchMapScreen> {
-  double selectedMapLat = 28.5865;
-  double selectedMapLng = 77.3152;
+  double selectedMapLat = 41.7151;
+  double selectedMapLng = 44.8271;
+  double? _resolvedMapLat;
+  double? _resolvedMapLng;
+  bool _initialCoordinatesLoaded = false;
   GoogleMapController? mapController;
   TextEditingController textEditingAddressSearchController =
       TextEditingController();
@@ -39,24 +42,47 @@ class _SearchMapScreenState extends State<SearchMapScreen> {
   bool _isSearchingPlaces = false;
   String? _placesError;
   @override
-  void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      selectedMapLat = double.parse(
-        context
-            .read<BookRideRealTimeDataBaseCubit>()
-            .state
-            .pickupAddressLatitude,
-      );
-      selectedMapLng = double.parse(
-        context
-            .read<BookRideRealTimeDataBaseCubit>()
-            .state
-            .pickupAddressLongitude,
-      );
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialCoordinatesLoaded) return;
 
-      textEditingAddressSearchController.clear();
-    });
-    super.initState();
+    final ride = context.read<BookRideRealTimeDataBaseCubit>().state;
+    final pickup = _validLatLng(
+      ride.pickupAddressLatitude,
+      ride.pickupAddressLongitude,
+    );
+    final dropoff = _validLatLng(
+      ride.dropoffAddressLatitude,
+      ride.dropoffAddressLongitude,
+    );
+    final initial = widget.checkStatus == false && dropoff != null
+        ? dropoff
+        : pickup;
+    if (initial != null) {
+      selectedMapLat = initial.latitude;
+      selectedMapLng = initial.longitude;
+    }
+    textEditingAddressSearchController.clear();
+    _initialCoordinatesLoaded = true;
+  }
+
+  LatLng? _validLatLng(String latitude, String longitude) {
+    final lat = double.tryParse(latitude);
+    final lng = double.tryParse(longitude);
+    if (lat == null || lng == null || !lat.isFinite || !lng.isFinite) {
+      return null;
+    }
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+    if (lat == 0 && lng == 0) return null;
+    return LatLng(lat, lng);
+  }
+
+  bool _matchesResolvedPin() {
+    final lat = _resolvedMapLat;
+    final lng = _resolvedMapLng;
+    if (lat == null || lng == null) return false;
+    return (lat - selectedMapLat).abs() < 0.000001 &&
+        (lng - selectedMapLng).abs() < 0.000001;
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -157,6 +183,8 @@ class _SearchMapScreenState extends State<SearchMapScreen> {
       setState(() {
         _nativePredictions = const [];
         _isSearchingPlaces = false;
+        _resolvedMapLat = place.latitude;
+        _resolvedMapLng = place.longitude;
       });
       _moveToCurrentLocation(
         currentLocation: LatLng(place.latitude, place.longitude),
@@ -343,11 +371,15 @@ class _SearchMapScreenState extends State<SearchMapScreen> {
                           getPlaceDetailWithLatLng: (Prediction prediction) {
                             if (prediction.lat != null &&
                                 prediction.lng != null) {
+                              final latitude = double.tryParse(prediction.lat!);
+                              final longitude = double.tryParse(
+                                prediction.lng!,
+                              );
+                              if (latitude == null || longitude == null) return;
+                              _resolvedMapLat = latitude;
+                              _resolvedMapLng = longitude;
                               _moveToCurrentLocation(
-                                currentLocation: LatLng(
-                                  double.parse(prediction.lat!),
-                                  double.parse(prediction.lng!),
-                                ),
+                                currentLocation: LatLng(latitude, longitude),
                               );
                             }
                           },
@@ -403,7 +435,10 @@ class _SearchMapScreenState extends State<SearchMapScreen> {
           BlocBuilder<UpdateSearchMapAddressCubit, UpdateSearchMapAddressState>(
             builder: (context, state) {
               if (state is UpdateSearchMapAddresSuccess) {
+                _resolvedMapLat = state.lat;
+                _resolvedMapLng = state.lng;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
                   textEditingAddressSearchController.text = state.currentAddress
                       .toString();
                   context.read<UpdateSearchMapAddressCubit>().removeAddress();
@@ -421,6 +456,10 @@ class _SearchMapScreenState extends State<SearchMapScreen> {
                 onCameraMove: (CameraPosition position) {
                   selectedMapLat = position.target.latitude;
                   selectedMapLng = position.target.longitude;
+                  if (!_matchesResolvedPin()) {
+                    _resolvedMapLat = null;
+                    _resolvedMapLng = null;
+                  }
                 },
                 onCameraIdle: () {
                   if (_mapDebounce?.isActive ?? false) _mapDebounce!.cancel();
@@ -504,6 +543,14 @@ class _SearchMapScreenState extends State<SearchMapScreen> {
               backgroundColor: themeColor,
               onPressed: () {
                 if (textEditingAddressSearchController.text.isNotEmpty) {
+                  if (!_matchesResolvedPin()) {
+                    showErrorToastMessage(
+                      "Please wait while the address is loading".translate(
+                        context,
+                      ),
+                    );
+                    return;
+                  }
                   if (widget.checkStatus == true) {
                     context
                         .read<SelectedAddressCubit>()
@@ -528,10 +575,30 @@ class _SearchMapScreenState extends State<SearchMapScreen> {
                     context.read<GetCordinatesCubit>().getCoordinates(
                       address: textEditingAddressSearchController.text
                           .toString(),
+                      latitude: selectedMapLat,
+                      longitude: selectedMapLng,
                     );
 
                     Navigator.of(context).pop();
                   } else {
+                    final pickup = _validLatLng(
+                      context
+                          .read<BookRideRealTimeDataBaseCubit>()
+                          .state
+                          .pickupAddressLatitude,
+                      context
+                          .read<BookRideRealTimeDataBaseCubit>()
+                          .state
+                          .pickupAddressLongitude,
+                    );
+                    if (pickup != null &&
+                        (pickup.latitude - selectedMapLat).abs() < 0.00001 &&
+                        (pickup.longitude - selectedMapLng).abs() < 0.00001) {
+                      showErrorToastMessage(
+                        "Please select different address".translate(context),
+                      );
+                      return;
+                    }
                     context
                         .read<SelectedAddressCubit>()
                         .updateIsSelectePickupdAddress(
@@ -556,19 +623,9 @@ class _SearchMapScreenState extends State<SearchMapScreen> {
                     context.read<GetCordinatesCubit>().getCoordinates(
                       address: textEditingAddressSearchController.text
                           .toString(),
+                      latitude: selectedMapLat,
+                      longitude: selectedMapLng,
                     );
-
-                    if (context
-                            .read<SelectedAddressCubit>()
-                            .dropOffAddressController
-                            .text ==
-                        context
-                            .read<SelectedAddressCubit>()
-                            .pickupAddressController
-                            .text) {
-                      showErrorToastMessage("Please select different address");
-                      return;
-                    }
                     Navigator.of(context).pop();
                   }
                 } else {

@@ -276,5 +276,7 @@
   "Requesting...": "მოთხოვნა იგზავნება...",
   "Please select a vehicle type.": "გთხოვთ, აირჩიოთ ავტომობილის ტიპი.",
   "Unable to prepare the payment": "გადახდის მომზადება ვერ მოხერხდა",
-  "Payment was confirmed, but the ride status could not be refreshed": "გადახდა დადასტურდა, თუმცა მგზავრობის სტატუსი ვერ განახლდა"
+  "Payment was confirmed, but the ride status could not be refreshed": "გადახდა დადასტურდა, თუმცა მგზავრობის სტატუსი ვერ განახლდა",
+  "Please wait while the address is loading": "გთხოვთ, დაელოდოთ მისამართის ჩატვირთვას",
+  "Please select different address": "გთხოვთ, აირჩიოთ განსხვავებული მისამართი"
 }

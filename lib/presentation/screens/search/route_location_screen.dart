@@ -34,6 +34,7 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
     _debounce?.cancel();
     super.dispose();
   }
+
   @override
   void initState() {
     super.initState();
@@ -61,7 +62,7 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
         listeners: [
           BlocListener<GetCordinatesCubit, GetCordinatesState>(
             listener: _handleCoordinateUpdate,
-          )
+          ),
         ],
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
@@ -119,8 +120,9 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
       }
 
       final position = await Geolocator.getCurrentPosition(
-          // ignore: deprecated_member_use
-          desiredAccuracy: LocationAccuracy.high);
+        // ignore: deprecated_member_use
+        desiredAccuracy: LocationAccuracy.high,
+      );
       final lat = position.latitude;
       final lng = position.longitude;
 
@@ -172,8 +174,9 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
   void _loadRecentDropLocations() {
     final storedList = box.get('recent_drop_locations', defaultValue: []);
     if (storedList is List) {
-      recentDropLocations =
-          storedList.map((e) => Map<String, String>.from(e)).toList();
+      recentDropLocations = storedList
+          .map((e) => Map<String, String>.from(e))
+          .toList();
     }
     setState(() {});
   }
@@ -182,11 +185,7 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
     // Duplicate remove
     recentDropLocations.removeWhere((item) => item['address'] == address);
     // Add at start
-    recentDropLocations.insert(0, {
-      "address": address,
-      "lat": lat,
-      "lng": lng,
-    });
+    recentDropLocations.insert(0, {"address": address, "lat": lat, "lng": lng});
 
     // Max 10 limit
     if (recentDropLocations.length > 5) {
@@ -215,12 +214,7 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: heading3Grey1(context).copyWith(
-              fontSize: 14,
-            ),
-          ),
+          Text(label, style: heading3Grey1(context).copyWith(fontSize: 14)),
           const SizedBox(height: 6),
           Container(
             decoration: BoxDecoration(
@@ -239,8 +233,10 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
                 prefixIcon: Icon(prefixIcon, color: iconColor, size: 20),
                 suffixIcon: suffixIcon,
                 border: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 18,
+                  horizontal: 16,
+                ),
               ),
             ),
           ),
@@ -251,96 +247,102 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: BlocBuilder<SelectedAddressCubit, SelectedAddressState>(
-          builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 🚗 Pickup Location
-            customTextField(
-              label: "Pickup Location".translate(context),
-              controller: cubit.pickupAddressController,
-              focusNode: focusNode1,
-              prefixIcon: Icons.radio_button_checked,
-              iconColor: Colors.green.shade700,
-              hint: "Enter pickup location".translate(context),
-              onTap: () {
-                setState(() => isPickUp = true);
-                cubit.updateIsSelectePickupdAddress(
-                    isCheckedSelectedPickup: true);
-                cubit.updateIsSelectedDropOffAddress(
-                    isCheckedSelectedDropOff: false);
-                context.read<GetSuggestionAddressCubit>().removeAddress();
-              },
-              onChanged: (query) {
-                setState(() {});
+        builder: (context, state) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 🚗 Pickup Location
+              customTextField(
+                label: "Pickup Location".translate(context),
+                controller: cubit.pickupAddressController,
+                focusNode: focusNode1,
+                prefixIcon: Icons.radio_button_checked,
+                iconColor: Colors.green.shade700,
+                hint: "Enter pickup location".translate(context),
+                onTap: () {
+                  setState(() => isPickUp = true);
+                  cubit.updateIsSelectePickupdAddress(
+                    isCheckedSelectedPickup: true,
+                  );
+                  cubit.updateIsSelectedDropOffAddress(
+                    isCheckedSelectedDropOff: false,
+                  );
+                  context.read<GetSuggestionAddressCubit>().removeAddress();
+                },
+                onChanged: (query) {
+                  setState(() {});
 
-                if (_debounce?.isActive ?? false) _debounce!.cancel();
-                _debounce = Timer(const Duration(milliseconds: 800), () {
-                  if (query.length >= 2) {
-                    context.read<GetSuggestionAddressCubit>().getSuggestions(query);
-
-                  }
-                });
-
-              },
-              suffixIcon: IconButton(
-                icon: Icon(Icons.my_location_rounded, color: themeColor),
-                onPressed: getCurrentLocationAndAddress,
+                  if (_debounce?.isActive ?? false) _debounce!.cancel();
+                  _debounce = Timer(const Duration(milliseconds: 800), () {
+                    if (query.length >= 2) {
+                      context.read<GetSuggestionAddressCubit>().getSuggestions(
+                        query,
+                      );
+                    }
+                  });
+                },
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.my_location_rounded, color: themeColor),
+                  onPressed: getCurrentLocationAndAddress,
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // 🏁 Drop Location
-            customTextField(
-              label: "Drop Location".translate(context),
-              controller: cubit.dropOffAddressController,
-              focusNode: focusNode2,
-              prefixIcon: Icons.location_on_outlined,
-              iconColor: Colors.red.shade600,
-              hint: "Enter drop location".translate(context),
-              onTap: () {
-                setState(() => isPickUp = false);
-                cubit.updateIsSelectePickupdAddress(
-                    isCheckedSelectedPickup: false);
-                cubit.updateIsSelectedDropOffAddress(
-                    isCheckedSelectedDropOff: true);
-                context.read<GetSuggestionAddressCubit>().removeAddress();
-              },
-              onChanged: (query) {
-                setState(() {});
+              // 🏁 Drop Location
+              customTextField(
+                label: "Drop Location".translate(context),
+                controller: cubit.dropOffAddressController,
+                focusNode: focusNode2,
+                prefixIcon: Icons.location_on_outlined,
+                iconColor: Colors.red.shade600,
+                hint: "Enter drop location".translate(context),
+                onTap: () {
+                  setState(() => isPickUp = false);
+                  cubit.updateIsSelectePickupdAddress(
+                    isCheckedSelectedPickup: false,
+                  );
+                  cubit.updateIsSelectedDropOffAddress(
+                    isCheckedSelectedDropOff: true,
+                  );
+                  context.read<GetSuggestionAddressCubit>().removeAddress();
+                },
+                onChanged: (query) {
+                  setState(() {});
 
-                if (_debounce?.isActive ?? false) _debounce!.cancel();
-                _debounce = Timer(const Duration(milliseconds: 800), () {
-                  if (query.length >= 2) {
-                    context.read<GetSuggestionAddressCubit>().getSuggestions(query);
-                    dropTextFilled =
-                        cubit.dropOffAddressController.text.isNotEmpty;
-                  }
-                });
+                  if (_debounce?.isActive ?? false) _debounce!.cancel();
+                  _debounce = Timer(const Duration(milliseconds: 800), () {
+                    if (query.length >= 2) {
+                      context.read<GetSuggestionAddressCubit>().getSuggestions(
+                        query,
+                      );
+                      dropTextFilled =
+                          cubit.dropOffAddressController.text.isNotEmpty;
+                    }
+                  });
+                },
+                suffixIcon: dropTextFilled
+                    ? IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        onPressed: () {
+                          cubit.dropOffAddressController.clear();
+                          setState(() {});
+                          context
+                              .read<GetSuggestionAddressCubit>()
+                              .removeAddress();
+                        },
+                      )
+                    : null,
+              ),
 
-              },
-              suffixIcon: dropTextFilled
-                  ? IconButton(
-                      icon: const Icon(Icons.close, color: Colors.grey),
-                      onPressed: () {
-                        cubit.dropOffAddressController.clear();
-                        setState(() {});
-                        context
-                            .read<GetSuggestionAddressCubit>()
-                            .removeAddress();
-                      },
-                    )
-                  : null,
-            ),
+              const SizedBox(height: 24),
 
-            const SizedBox(height: 24),
-
-            // 🌍 Optional: Nearby locations or manual selector
-            selectWithLocation(context: context),
-          ],
-        );
-      }),
+              // 🌍 Optional: Nearby locations or manual selector
+              selectWithLocation(context: context),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -362,24 +364,26 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
             padding: EdgeInsets.zero,
             itemCount: suggestions.length,
             itemBuilder: (_, index) {
-              final address = suggestions[index];
+              final suggestion = suggestions[index];
               return ListTile(
                 leading: ClipOval(
                   child: Container(
-                      height: 40,
-                      width: 40,
-                      color: themeColor,
-                      child: const Icon(
-                        Icons.location_on_outlined,
-                        color: Colors.black,
-                        size: 20,
-                      )),
+                    height: 40,
+                    width: 40,
+                    color: themeColor,
+                    child: const Icon(
+                      Icons.location_on_outlined,
+                      color: Colors.black,
+                      size: 20,
+                    ),
+                  ),
                 ),
                 title: RichText(
                   text: TextSpan(
-                    children: _formatSuggestion(address),
-                    style: regular(context)
-                        .copyWith(color: notifires.getGrey1whiteColor),
+                    children: _formatSuggestion(suggestion.description),
+                    style: regular(
+                      context,
+                    ).copyWith(color: notifires.getGrey1whiteColor),
                   ),
                 ),
                 onTap: () {
@@ -388,15 +392,18 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
                   final isPickup = selectedCubit.state.isCheckedSelectedPickup;
 
                   if (isPickup) {
-                    selectedCubit.pickupAddressController.text = address;
+                    selectedCubit.pickupAddressController.text =
+                        suggestion.description;
                   } else {
-                    selectedCubit.dropOffAddressController.text = address;
+                    selectedCubit.dropOffAddressController.text =
+                        suggestion.description;
                   }
 
                   context.read<GetSuggestionAddressCubit>().removeAddress();
-                  context
-                      .read<GetCordinatesCubit>()
-                      .getCoordinates(address: address);
+                  context.read<GetCordinatesCubit>().getCoordinates(
+                    address: suggestion.description,
+                    placeId: suggestion.placeId,
+                  );
 
                   // Refresh UI
                   setState(() {});
@@ -424,8 +431,10 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
                     .isEmpty &&
                 recentDropLocations.isNotEmpty) ...[
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Text(
                   "Recent Drop Searches".translate(context),
                   style: heading3Grey1(context).copyWith(fontSize: 14),
@@ -441,15 +450,17 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
                     leading: Icon(Icons.history, color: themeColor),
                     title: Text(
                       item['address'] ?? "",
-                      style: regular(context)
-                          .copyWith(color: notifires.getGrey1whiteColor),
+                      style: regular(
+                        context,
+                      ).copyWith(color: notifires.getGrey1whiteColor),
                     ),
                     onTap: () {
                       showButton = false;
                       context
-                          .read<SelectedAddressCubit>()
-                          .dropOffAddressController
-                          .text = item['address'] ?? "";
+                              .read<SelectedAddressCubit>()
+                              .dropOffAddressController
+                              .text =
+                          item['address'] ?? "";
                       context
                           .read<BookRideRealTimeDataBaseCubit>()
                           .updateDropOffLatAndLng(
@@ -458,13 +469,14 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
                           );
 
                       final selected = context.read<SelectedAddressCubit>();
-                      final bookRide =
-                          context.read<BookRideRealTimeDataBaseCubit>();
+                      final bookRide = context
+                          .read<BookRideRealTimeDataBaseCubit>();
 
                       if (selected.pickupAddressController.text.isEmpty ||
                           selected.dropOffAddressController.text.isEmpty) {
                         showErrorToastMessage(
-                            "Please select both addresses".translate(context));
+                          "Please select both addresses".translate(context),
+                        );
                         return;
                       }
 
@@ -552,8 +564,9 @@ class _UserSearchLocationState extends State<UserSearchLocation> {
     final parts = suggestion.split(',');
     return [
       TextSpan(
-          text: parts.first.trim(),
-          style: heading3Grey1(context).copyWith(fontSize: 15)),
+        text: parts.first.trim(),
+        style: heading3Grey1(context).copyWith(fontSize: 15),
+      ),
       if (parts.length > 1)
         TextSpan(
           text: "\n${parts.sublist(1).join(',').trim()}",

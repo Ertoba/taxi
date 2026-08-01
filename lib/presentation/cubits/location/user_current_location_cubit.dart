@@ -87,10 +87,7 @@ class LocationUserCubit extends Cubit<LocationState> {
     try {
       _debounceTimer?.cancel();
       _debounceTimer = Timer(const Duration(seconds: 1), () {
-        final currentLocation = LatLng(
-          position.latitude,
-          position.longitude,
-        );
+        final currentLocation = LatLng(position.latitude, position.longitude);
         emit(LocationSucess(currentLocation: currentLocation));
       });
     } catch (error) {
@@ -216,8 +213,18 @@ class GetSuggestionAddressState extends Equatable {
   List<Object?> get props => [];
 }
 
+class AddressSuggestion extends Equatable {
+  final String description;
+  final String placeId;
+
+  const AddressSuggestion({required this.description, required this.placeId});
+
+  @override
+  List<Object?> get props => [description, placeId];
+}
+
 class GetSuggestionAddressSuccess extends GetSuggestionAddressState {
-  final List<String>? suggestions;
+  final List<AddressSuggestion>? suggestions;
 
   GetSuggestionAddressSuccess({this.suggestions});
 
@@ -235,8 +242,16 @@ class GetSuggestionAddressCubit extends Cubit<GetSuggestionAddressState> {
     }
 
     const apiKey = Config.googleKey;
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${Uri.encodeQueryComponent(query)}&key=$apiKey',
+    final url = Uri.https(
+      'maps.googleapis.com',
+      '/maps/api/place/autocomplete/json',
+      <String, String>{
+        'input': query,
+        'components': 'country:ge',
+        'language': 'ka',
+        'region': 'ge',
+        'key': apiKey,
+      },
     );
 
     try {
@@ -259,8 +274,18 @@ class GetSuggestionAddressCubit extends Cubit<GetSuggestionAddressState> {
       }
 
       final suggestions = predictions
-          .map((place) => place['description']?.toString() ?? '')
-          .where((description) => description.isNotEmpty)
+          .whereType<Map<String, dynamic>>()
+          .map(
+            (place) => AddressSuggestion(
+              description: place['description']?.toString().trim() ?? '',
+              placeId: place['place_id']?.toString().trim() ?? '',
+            ),
+          )
+          .where(
+            (suggestion) =>
+                suggestion.description.isNotEmpty &&
+                suggestion.placeId.isNotEmpty,
+          )
           .toList(growable: false);
 
       emit(GetSuggestionAddressSuccess(suggestions: suggestions));
@@ -305,20 +330,47 @@ class GetCordinatesCubit extends Cubit<GetCordinatesState> {
   Future<void> getCoordinates({
     required String address,
     bool? checkStatus,
+    double? latitude,
+    double? longitude,
+    String? placeId,
   }) async {
     try {
+      if (latitude != null || longitude != null) {
+        if (!_isValidCoordinate(latitude, longitude)) {
+          emit(GetCordinatesFailure(error: 'Invalid map coordinates'));
+          return;
+        }
+
+        emit(
+          GetCordinatesSuccess(
+            lattiude: latitude!.toStringAsFixed(7),
+            longitude: longitude!.toStringAsFixed(7),
+            address: address,
+          ),
+        );
+        return;
+      }
+
       const googleApiKey = Config.googleKey;
-      final url = Uri.parse(
-        'https://maps.googleapis.com/maps/api/geocode/json?address=${Uri.encodeComponent(address)}&key=$googleApiKey',
+      final normalizedPlaceId = placeId?.trim() ?? '';
+      final parameters = <String, String>{
+        if (normalizedPlaceId.isNotEmpty)
+          'place_id': normalizedPlaceId
+        else
+          'address': address,
+        'language': 'ka',
+        'region': 'ge',
+        'key': googleApiKey,
+      };
+      final url = Uri.https(
+        'maps.googleapis.com',
+        '/maps/api/geocode/json',
+        parameters,
       );
 
       final response = await http.get(url);
       if (response.statusCode != 200) {
-        emit(
-          GetCordinatesFailure(
-            error: 'HTTP error: ${response.statusCode}',
-          ),
-        );
+        emit(GetCordinatesFailure(error: 'HTTP error: ${response.statusCode}'));
         return;
       }
 
@@ -328,11 +380,25 @@ class GetCordinatesCubit extends Cubit<GetCordinatesState> {
         return;
       }
 
-      final location = data['results'][0]['geometry']['location'];
+      final results = data['results'];
+      if (results is! List || results.isEmpty) {
+        emit(GetCordinatesFailure(error: 'ZERO_RESULTS'));
+        return;
+      }
+
+      final location = results[0]['geometry']['location'];
+      final resolvedLatitude = (location['lat'] as num?)?.toDouble();
+      final resolvedLongitude = (location['lng'] as num?)?.toDouble();
+      if (!_isValidCoordinate(resolvedLatitude, resolvedLongitude)) {
+        emit(GetCordinatesFailure(error: 'Invalid geocoding response'));
+        return;
+      }
+
       emit(
         GetCordinatesSuccess(
-          lattiude: location['lat'].toString(),
-          longitude: location['lng'].toString(),
+          lattiude: resolvedLatitude!.toStringAsFixed(7),
+          longitude: resolvedLongitude!.toStringAsFixed(7),
+          address: address,
         ),
       );
     } catch (error) {
@@ -342,6 +408,17 @@ class GetCordinatesCubit extends Cubit<GetCordinatesState> {
 
   void removeCordinates() {
     emit(GetCordinatesSuccess(lattiude: '', longitude: ''));
+  }
+
+  static bool _isValidCoordinate(double? latitude, double? longitude) {
+    if (latitude == null || longitude == null) return false;
+    if (!latitude.isFinite || !longitude.isFinite) return false;
+
+    return latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180 &&
+        !(latitude == 0 && longitude == 0);
   }
 }
 
@@ -398,15 +475,15 @@ class SelectedAddressState extends Equatable {
 
   @override
   List<Object?> get props => [
-        selectedPickupAddress,
-        selectedDropOffAddress,
-        isCheckedSelectedDropOff,
-        isCheckedSelectedPickup,
-        ischeckedCrossIconDropOff,
-        icheckedCrossIconPickup,
-        ischeckedPickupSuggestion,
-        ischekcedDropOffSuggestion,
-      ];
+    selectedPickupAddress,
+    selectedDropOffAddress,
+    isCheckedSelectedDropOff,
+    isCheckedSelectedPickup,
+    ischeckedCrossIconDropOff,
+    icheckedCrossIconPickup,
+    ischeckedPickupSuggestion,
+    ischekcedDropOffSuggestion,
+  ];
 }
 
 class SelectedAddressCubit extends Cubit<SelectedAddressState> {
@@ -417,18 +494,12 @@ class SelectedAddressCubit extends Cubit<SelectedAddressState> {
       TextEditingController();
 
   void updateSelectePickupdSuggestion({bool? ischeckedPickupSuggestion}) {
-    emit(
-      state.copyWith(
-        ischeckedPickupSuggestion: ischeckedPickupSuggestion,
-      ),
-    );
+    emit(state.copyWith(ischeckedPickupSuggestion: ischeckedPickupSuggestion));
   }
 
   void updateSelecteDropOffdSuggestion({bool? ischekcedDropOffSuggestion}) {
     emit(
-      state.copyWith(
-        ischekcedDropOffSuggestion: ischekcedDropOffSuggestion,
-      ),
+      state.copyWith(ischekcedDropOffSuggestion: ischekcedDropOffSuggestion),
     );
   }
 
@@ -449,15 +520,11 @@ class SelectedAddressCubit extends Cubit<SelectedAddressState> {
   }
 
   void updateIsSelectePickupdAddress({bool? isCheckedSelectedPickup}) {
-    emit(
-      state.copyWith(isCheckedSelectedPickup: isCheckedSelectedPickup),
-    );
+    emit(state.copyWith(isCheckedSelectedPickup: isCheckedSelectedPickup));
   }
 
   void updateIsSelectedDropOffAddress({bool? isCheckedSelectedDropOff}) {
-    emit(
-      state.copyWith(isCheckedSelectedDropOff: isCheckedSelectedDropOff),
-    );
+    emit(state.copyWith(isCheckedSelectedDropOff: isCheckedSelectedDropOff));
   }
 
   void updateIsCrossIconSelectePickup({bool? icheckedCrossIconPickup}) {
@@ -503,9 +570,7 @@ class SetVehicleCategoryState extends Equatable {
   const SetVehicleCategoryState({this.itemList = const []});
 
   SetVehicleCategoryState copyWith({List<ItemTypes>? itemList}) {
-    return SetVehicleCategoryState(
-      itemList: itemList ?? this.itemList,
-    );
+    return SetVehicleCategoryState(itemList: itemList ?? this.itemList);
   }
 
   bool shouldRebuild(SetVehicleCategoryState previousState) {

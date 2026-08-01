@@ -276,5 +276,7 @@
   "Requesting...": "Requesting...",
   "Please select a vehicle type.": "Please select a vehicle type.",
   "Unable to prepare the payment": "Unable to prepare the payment",
-  "Payment was confirmed, but the ride status could not be refreshed": "Payment was confirmed, but the ride status could not be refreshed"
+  "Payment was confirmed, but the ride status could not be refreshed": "Payment was confirmed, but the ride status could not be refreshed",
+  "Please wait while the address is loading": "Please wait while the address is loading",
+  "Please select different address": "Please select different address"
 }
